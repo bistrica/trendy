@@ -37,9 +37,13 @@ print "> ",size[0]*size[1]*3
 def load_files():
     #print len(files)
     c=0
+    files.sort()
+    print files
     for filename in files:
         c+=1
-        #print filename, c
+        if 'dens_map' in filename:
+            continue
+        print filename, c
         #if c==60:
             #break
         im = Image.open("{0}{1}".format(path, filename))  # "/home/olusiak/Obrazy/schr.png")
@@ -73,37 +77,43 @@ def load_files():
 
                 #all_pixels=np.asarray(all_pixels)
                 #print 'o: ',all_pixels[0]
+                all = list()
+                a1 = list()
+                a2 = list()
+                a3 = list()
+                for a in all_pixels:
+                    a1.append(a[0])
+                    a2.append(a[1])
+                    a3.append(a[2])
+                a1 = np.asarray(a1)
+                a1 = np.reshape(a1, (size[0], size[1]))
+                a2 = np.asarray(a2)
+                a2 = np.reshape(a2, (size[0], size[1]))
+                a3 = np.asarray(a3)
+                a3 = np.reshape(a3, (size[0], size[1]))
+                all.append(a3)
+                #all.append(a2)
+                #all.append(a3)
 
-                if 'dens_map' in filename:
-                    all_pixels=[item for sublist in all_pixels for item in sublist]
+                all = np.asarray(all)
+
+
+                #plt.matshow(a3)  # ll_pixels)
+                #plt.show()
+                if 'density' in filename:
+
+                    all_pixels=[item for sublist in a3 for item in sublist]#in all_pixels
                     output_list.append(all_pixels)
                     # output_list.append(all_pixels2)
                     # output_list.append(all_pixels3)
                     # output_list.append(all_pixels4)
                 else:
-                    #all_pixels = [item for sublist in all_pixels for item in sublist]
-                    all=list()
-                    a1=list()
-                    a2=list()
-                    a3=list()
-                    for a in all_pixels:
-                        a1.append(a[0])
-                        a2.append(a[1])
-                        a3.append(a[2])
-                    a1=np.asarray(a1)
-                    a1 = np.reshape(a1, (size[0], size[1]))
-                    a2 = np.asarray(a2)
-                    a2 = np.reshape(a1, (size[0], size[1]))
-                    a3 = np.asarray(a3)
-                    a3 = np.reshape(a1, (size[0], size[1]))
-                    all.append(a1)
-                    all.append(a2)
-                    all.append(a3)
+#                    all_pixels = [item for sublist in all_pixels for item in sublist]
 
-                    all=np.asarray(all)
                     #print 'all sh ',all.shape
 
                     #print 'SHAPE ',all.shape
+                    #print 'a3 ',a3.shape
                     image_list.append(all)#_pixels)
                     # image_list.append(all_pixels2)
                     # image_list.append(all_pixels3)
@@ -203,7 +213,7 @@ def createConv(attributes,labels,data,results):
                 ('output', layers.DenseLayer),
                 ],
         # input layer
-        input_shape=(None,3, size[0],size[1]),
+        input_shape=(None,1, size[0],size[1]),
         # layer conv2d1
         conv2d1_num_filters=32,
         conv2d1_filter_size=(5, 5),
@@ -226,7 +236,7 @@ def createConv(attributes,labels,data,results):
         dropout2_p=0.5,
         # output
         output_nonlinearity=lasagne.nonlinearities.rectify,#softmax,
-        output_num_units=size[0]*size[1]*3,
+        output_num_units=size[0]*size[1],#*3,
         # optimization method params
         update=nesterov_momentum,
         update_learning_rate=0.01,
@@ -240,12 +250,15 @@ def createConv(attributes,labels,data,results):
     nn = net1.fit(X_train, y_train)
     preds = net1.predict(X_test)
 
-    cm = confusion_matrix(y_test, preds)
-    plt.matshow(cm)
-    plt.title('Confusion matrix')
-    plt.colorbar()
-    plt.ylabel('True label')
-    plt.xlabel('Predicted label')
+    print preds
+    print preds.shape
+
+    #cm = confusion_matrix(y_test, preds)
+    plt.matshow(preds)
+    #plt.title('Confusion matrix')
+    #plt.colorbar()
+    #plt.ylabel('True label')
+    #plt.xlabel('Predicted label')
     plt.show()
 
 def predict(data):
