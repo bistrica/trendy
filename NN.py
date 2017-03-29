@@ -27,12 +27,13 @@ from os import listdir
 path="/home/olusiak/Obrazy/densities/"
 image_list=list()
 output_list=list()
+out=list()
 files = [f for f in listdir(path) if isfile(join(path, f))]
 ran=8
 size_orig = 2048/4,1536/4
 size = size_orig[0] / ran, size_orig[1] / ran
 PIXELS=size[0]*size[1]/4
-print "> ",size[0]*size[1]*3
+print "> ",size[0], ' ',size[1]
 
 def load_files():
     #print len(files)
@@ -53,12 +54,14 @@ def load_files():
             im_arr = np.fromstring(im.tobytes(), dtype=np.uint8)
             im_arr = im_arr.reshape((im.size[1], im.size[0], 4))
             kernel = np.ones((3, 3), np.uint8)
-            kernel2 = np.ones((7, 7), np.uint8)
+            kernel2 = np.ones((9, 9), np.uint8)
             erosion = cv2.erode(im_arr, kernel, iterations=1)
             dilate = cv2.dilate(erosion, kernel2, iterations=1)
     #        plt.imshow(dilate)
     #        plt.show()
             im = Image.fromarray(dilate)
+            #plt.imshow(im)
+            #plt.show()
 
         #print size
 
@@ -138,21 +141,22 @@ def load_files():
                 a3 = np.reshape(a3, (size[0], size[1]))
                 a3a = np.asarray(a3a)
                 a3a = np.reshape(a3a, (size[1], size[0]))
-                all.append(a2)
+
                 #all.append(a2)
                 #all.append(a3)
 
-                all = np.asarray(all)
+
 
                 #if 'density' in filename:
                     #plt.matshow(a3a)  # ll_pixels)
                     #plt.show()
                 a2=np.rot90(a2)
                 a2=np.flipud(a2)
-                #plt.matshow(a2)  # ll_pixels)
-                #plt.show()
+                all.append(a2)
+                all = np.asarray(all)
+                print 'a2 ',a2.shape, ', ' ,all.shape
                 if 'density' in filename:
-
+                    out.append(a2)
                     all_pixels=[item for sublist in a2 for item in sublist]#in all_pixels
                     output_list.append(all_pixels)
                     # output_list.append(all_pixels2)
@@ -175,8 +179,13 @@ def load_files():
         #break
 #np.asarray(a)
 load_files()
-
-
+#for i in range(len(image_list)):
+    #print 'ii: ',i
+    #plt.matshow(image_list[i][0])
+    #plt.show()
+    #plt.matshow(out[i])
+    #plt.show()
+    #print '==='
 
 
         #print 'pix ',len(all_pixels)#im.size
@@ -264,7 +273,7 @@ def createConv(attributes,labels,data,results):
                 ('output', layers.DenseLayer),
                 ],
         # input layer
-        input_shape=(None,1, size[0],size[1]),
+        input_shape=(None,1, size[1],size[0]),
         # layer conv2d1
         conv2d1_num_filters=32,
         conv2d1_filter_size=(5, 5),
@@ -287,12 +296,13 @@ def createConv(attributes,labels,data,results):
         dropout2_p=0.5,
         # output
         output_nonlinearity=lasagne.nonlinearities.softmax,#rectify,#softmax,
-        output_num_units=size[0]*size[1],#*3,
+        output_shape=(3,size[1],size[0]),
+#        output_num_units=size[0]*size[1],#*3,
         # optimization method params
         update=nesterov_momentum,
         update_learning_rate=0.01,
         update_momentum=0.9,
-        max_epochs=10,
+        max_epochs=2,
         verbose=1,
         regression=True
         )
@@ -304,6 +314,10 @@ def createConv(attributes,labels,data,results):
     i=0
     for pr in preds:
         pr=np.reshape(pr,(size[0],size[1]))
+        pr = np.rot90(pr)
+        pr = np.flipud(pr)
+        for p in pr:
+            print 'PR: ',p
         plt.matshow(pr)
         plt.show()
         plt.matshow(X_test[i][0])
@@ -312,12 +326,12 @@ def createConv(attributes,labels,data,results):
     print preds.shape
 
     #cm = confusion_matrix(y_test, preds)
-    plt.matshow(preds)
+    #plt.matshow(preds)
     #plt.title('Confusion matrix')
     #plt.colorbar()
     #plt.ylabel('True label')
     #plt.xlabel('Predicted label')
-    plt.show()
+    #plt.show()
 
 def predict(data):
     #result=clf.predict(data)
