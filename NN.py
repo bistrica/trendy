@@ -28,8 +28,8 @@ path="/home/olusiak/Obrazy/densities/"
 image_list=list()
 output_list=list()
 files = [f for f in listdir(path) if isfile(join(path, f))]
-ran=2
-size_orig = 2048/8,1536/8
+ran=10
+size_orig = 2048/4,1536/4
 size = size_orig[0] / ran, size_orig[1] / ran
 PIXELS=size[0]*size[1]/4
 print "> ",size[0]*size[1]*3
@@ -91,18 +91,18 @@ def load_files():
                 a2 = np.reshape(a2, (size[0], size[1]))
                 a3 = np.asarray(a3)
                 a3 = np.reshape(a3, (size[0], size[1]))
-                all.append(a3)
+                all.append(a2)
                 #all.append(a2)
                 #all.append(a3)
 
                 all = np.asarray(all)
 
 
-                #plt.matshow(a3)  # ll_pixels)
+                #plt.matshow(a2)  # ll_pixels)
                 #plt.show()
                 if 'density' in filename:
 
-                    all_pixels=[item for sublist in a3 for item in sublist]#in all_pixels
+                    all_pixels=[item for sublist in a2 for item in sublist]#in all_pixels
                     output_list.append(all_pixels)
                     # output_list.append(all_pixels2)
                     # output_list.append(all_pixels3)
@@ -235,7 +235,7 @@ def createConv(attributes,labels,data,results):
         # dropout2
         dropout2_p=0.5,
         # output
-        output_nonlinearity=lasagne.nonlinearities.rectify,#softmax,
+        output_nonlinearity=lasagne.nonlinearities.softmax,#rectify,#softmax,
         output_num_units=size[0]*size[1],#*3,
         # optimization method params
         update=nesterov_momentum,
@@ -250,7 +250,14 @@ def createConv(attributes,labels,data,results):
     nn = net1.fit(X_train, y_train)
     preds = net1.predict(X_test)
 
-    print preds
+    i=0
+    for pr in preds:
+        pr=np.reshape(pr,(size[0],size[1]))
+        plt.matshow(pr)
+        plt.show()
+        plt.matshow(X_test[i][0])
+        i+=1
+        plt.show()
     print preds.shape
 
     #cm = confusion_matrix(y_test, preds)
