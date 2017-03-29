@@ -1,6 +1,6 @@
 import numpy
 import sklearn
-
+import cv2
 import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
@@ -28,7 +28,7 @@ path="/home/olusiak/Obrazy/densities/"
 image_list=list()
 output_list=list()
 files = [f for f in listdir(path) if isfile(join(path, f))]
-ran=10
+ran=8
 size_orig = 2048/4,1536/4
 size = size_orig[0] / ran, size_orig[1] / ran
 PIXELS=size[0]*size[1]/4
@@ -40,6 +40,7 @@ def load_files():
     files.sort()
     print files
     for filename in files:
+
         c+=1
         if 'dens_map' in filename:
             continue
@@ -47,57 +48,107 @@ def load_files():
         #if c==60:
             #break
         im = Image.open("{0}{1}".format(path, filename))  # "/home/olusiak/Obrazy/schr.png")
-
+        if 'density' in filename:
+            print 'erozja'
+            im_arr = np.fromstring(im.tobytes(), dtype=np.uint8)
+            im_arr = im_arr.reshape((im.size[1], im.size[0], 4))
+            kernel = np.ones((3, 3), np.uint8)
+            kernel2 = np.ones((7, 7), np.uint8)
+            erosion = cv2.erode(im_arr, kernel, iterations=1)
+            dilate = cv2.dilate(erosion, kernel2, iterations=1)
+    #        plt.imshow(dilate)
+    #        plt.show()
+            im = Image.fromarray(dilate)
 
         #print size
+
         im.thumbnail(size_orig, Image.ANTIALIAS)
         pix = im.load()
-
+        #plt.imshow(im)
+        #plt.show()
         for i in range(ran):
             for j in range(ran):#i, ran, 1):
                 all_pixels = list()#np.array(int)
-                #print '>', size[0] * i, ' ', size[0] * (i + 1),  ' / ', size[1] * j, ' ', size[1] * (j + 1)
+                aa=list()
+                print '>', size[0] * i, ' ', size[0] * (i + 1),  ' / ', size[1] * j, ' ', size[1] * (j + 1)
+                d = 0
+                dd = 0
                 for x in range(size[0] * i, size[0] * (i + 1), 1):
                     #for j in range(ran):  # i, ran, 1):
                     if True:
 
                         for y in range(size[1] * j, size[1] * (j + 1), 1):
                             cpixel = pix[x, y]
+                            #if 'density' in filename:
+                            #    if pix[x,y][1]==255:
+                            #        print 'PX', pix[x,y]
+                            cpixel2=pix[x,y]
+                            #if 'density' in filename:
+                            #    if pix[x,y][1]==35 or pix[x,y][1]==55:
+                            #        print 'px',pix[x,y],', ',cpixel
                             if len(cpixel)>3:
-                                cpixel=(cpixel[0],cpixel[1],cpixel[2])
+                                xx=0
+                                if cpixel[1]==255 and cpixel[2]==255:
+                                    xx=125#cpixel[0]=125
+                                elif cpixel[2]==255:
+                                    xx=255#cpixel[1]
+                                #if cpixel[1]==255:
+                                #    xx=255#cpixel[0]=255
+                                cpixel=(cpixel[0],xx,cpixel[2])
+                                #if xx!=0:
+                                #    print 'cc ',cpixel
+
+                                if xx==125:
+                                    d+=1
+                                if xx==255:
+                                    dd+=1
+
+                                #cpixel2=(cpixel2[1],cpixel2[2],cpixel2[3])#,cpixel2[3])
                             if len(cpixel) > 3:
                                 print ":: ", len(cpixel)
+                            #if 'density' in filename:
+                            #    print 'cp ',pix[x,y], ' ',cpixel
                             all_pixels.append(cpixel)
+                            aa.append(cpixel2)
                             #all_pixels=np.asarray(all_pixels)
                             #print 'Al ',all_pixels.shape
                             # print 'L: ',len(all_pixels)
 
-
+                print 'D: ', d, ' ,', dd
                 #print 'ALL ',len(all_pixels)
 
-                #all_pixels=np.asarray(all_pixels)
+                #plt.show()
                 #print 'o: ',all_pixels[0]
                 all = list()
                 a1 = list()
                 a2 = list()
                 a3 = list()
+                a3a = list()
                 for a in all_pixels:
                     a1.append(a[0])
                     a2.append(a[1])
                     a3.append(a[2])
+                for a in aa:
+                    a3a.append(a[0])
                 a1 = np.asarray(a1)
-                a1 = np.reshape(a1, (size[0], size[1]))
+                a1 = np.reshape(a1, (size[1], size[0]))
                 a2 = np.asarray(a2)
                 a2 = np.reshape(a2, (size[0], size[1]))
                 a3 = np.asarray(a3)
                 a3 = np.reshape(a3, (size[0], size[1]))
+                a3a = np.asarray(a3a)
+                a3a = np.reshape(a3a, (size[1], size[0]))
                 all.append(a2)
                 #all.append(a2)
                 #all.append(a3)
 
                 all = np.asarray(all)
 
-
+                #if 'density' in filename:
+                    #plt.matshow(a3a)  # ll_pixels)
+                    #plt.show()
+                a2=np.rot90(a2)
+                a2=np.flipud(a2)
                 #plt.matshow(a2)  # ll_pixels)
                 #plt.show()
                 if 'density' in filename:
