@@ -29,8 +29,9 @@ image_list=list()
 output_list=list()
 out=list()
 files = [f for f in listdir(path) if isfile(join(path, f))]
-ran=8
-size_orig = 2048/4,1536/4
+ran=10
+ratio=8
+size_orig = 2048/ratio,1536/ratio
 size = size_orig[0] / ran, size_orig[1] / ran
 PIXELS=size[0]*size[1]/4
 print "> ",size[0], ' ',size[1]
@@ -42,9 +43,14 @@ def load_files():
     print files
     for filename in files:
 
-        c+=1
+
+
         if 'dens_map' in filename:
             continue
+        c += 1
+        print 'f ',filename
+        #if c == 11:
+        #    break
         print filename, c
         #if c==60:
             #break
@@ -54,7 +60,7 @@ def load_files():
             im_arr = np.fromstring(im.tobytes(), dtype=np.uint8)
             im_arr = im_arr.reshape((im.size[1], im.size[0], 4))
             kernel = np.ones((3, 3), np.uint8)
-            kernel2 = np.ones((9, 9), np.uint8)
+            kernel2 = np.ones((ratio*2+1, ratio*2+1), np.uint8)
             erosion = cv2.erode(im_arr, kernel, iterations=1)
             dilate = cv2.dilate(erosion, kernel2, iterations=1)
     #        plt.imshow(dilate)
@@ -69,123 +75,155 @@ def load_files():
         pix = im.load()
         #plt.imshow(im)
         #plt.show()
-        for i in range(ran):
-            for j in range(ran):#i, ran, 1):
-                all_pixels = list()#np.array(int)
-                aa=list()
-                print '>', size[0] * i, ' ', size[0] * (i + 1),  ' / ', size[1] * j, ' ', size[1] * (j + 1)
-                d = 0
-                dd = 0
-                for x in range(size[0] * i, size[0] * (i + 1), 1):
-                    #for j in range(ran):  # i, ran, 1):
-                    if True:
+        for ox in range(0,1000,10):
+            for oy in range(0,1000,10):
+                for i in range(ran):
+                    try:
+                        test = ox + size[0] * i
+                        test = pix[test, 0]
+                        test = ox + size[0] * (i + 1)
+                        test = pix[test, 0]
+                    except:
+                        continue
+                    for j in range(ran):#i, ran, 1):
+                        all_pixels = list()#np.array(int)
+                        #aa=list()
+                        #print '>', size[0] * i, ' ', size[0] * (i + 1),  ' / ', size[1] * j, ' ', size[1] * (j + 1)
+                        d = 0
+                        dd = 0
+                        try:
 
-                        for y in range(size[1] * j, size[1] * (j + 1), 1):
-                            cpixel = pix[x, y]
-                            #if 'density' in filename:
-                            #    if pix[x,y][1]==255:
-                            #        print 'PX', pix[x,y]
-                            cpixel2=pix[x,y]
-                            #if 'density' in filename:
-                            #    if pix[x,y][1]==35 or pix[x,y][1]==55:
-                            #        print 'px',pix[x,y],', ',cpixel
-                            if len(cpixel)>3:
-                                xx=0
-                                if cpixel[1]==255 and cpixel[2]==255:
-                                    xx=125#cpixel[0]=125
-                                elif cpixel[2]==255:
-                                    xx=255#cpixel[1]
-                                #if cpixel[1]==255:
-                                #    xx=255#cpixel[0]=255
-                                cpixel=(cpixel[0],xx,cpixel[2])
-                                #if xx!=0:
-                                #    print 'cc ',cpixel
+                            test=oy+size[1] * j
+                            test=pix[0,test]
+                            test=oy+size[1] * (j + 1)
+                            test = pix[0, test]
+                        except:
+                            continue
+                        for x in range(ox+size[0] * i, ox+size[0] * (i + 1), 1):
+                            #for j in range(ran):  # i, ran, 1):
+                            if True:
 
-                                if xx==125:
-                                    d+=1
-                                if xx==255:
-                                    dd+=1
+                                for y in range(size[1] * j, size[1] * (j + 1), 1):
+                                    cpixel = pix[x, y]
+                                    #if 'density' in filename:
+                                    #    if pix[x,y][1]==255:
+                                    #        print 'PX', pix[x,y]
+                                    cpixel2=pix[x,y]
+                                    #if 'density' in filename:
+                                    #    if pix[x,y][1]==35 or pix[x,y][1]==55:
+                                    #        print 'px',pix[x,y],', ',cpixel
+                                    if len(cpixel)>3:
+                                        xx=0
+                                        if cpixel[1]==255 and cpixel[2]==255:
+                                            xx=1#25#cpixel[0]=125
+                                        elif cpixel[2]==255:
+                                            xx=2#55#cpixel[1]
+                                        #if cpixel[1]==255:
+                                        #    xx=255#cpixel[0]=255
+                                        cpixel=(cpixel[0],xx,cpixel[2])
+                                        #if xx!=0:
+                                        #    print 'cc ',cpixel
 
-                                #cpixel2=(cpixel2[1],cpixel2[2],cpixel2[3])#,cpixel2[3])
-                            if len(cpixel) > 3:
-                                print ":: ", len(cpixel)
-                            #if 'density' in filename:
-                            #    print 'cp ',pix[x,y], ' ',cpixel
-                            all_pixels.append(cpixel)
-                            aa.append(cpixel2)
-                            #all_pixels=np.asarray(all_pixels)
-                            #print 'Al ',all_pixels.shape
-                            # print 'L: ',len(all_pixels)
+                                        #if xx==125:
+                                        #    d+=1
+                                        #if xx==255:
+                                        #    dd+=1
 
-                print 'D: ', d, ' ,', dd
-                #print 'ALL ',len(all_pixels)
+                                        #cpixel2=(cpixel2[1],cpixel2[2],cpixel2[3])#,cpixel2[3])
+                                    #if len(cpixel) > 3:
+                                    #    print ":: ", len(cpixel)
+                                    #if 'density' in filename:
+                                    #    print 'cp ',pix[x,y], ' ',cpixel
+                                    all_pixels.append(cpixel)
+                                    #aa.append(cpixel2)
+                                    #all_pixels=np.asarray(all_pixels)
+                                    #print 'Al ',all_pixels.shape
+                                    # print 'L: ',len(all_pixels)
 
-                #plt.show()
-                #print 'o: ',all_pixels[0]
-                all = list()
-                a1 = list()
-                a2 = list()
-                a3 = list()
-                a3a = list()
-                for a in all_pixels:
-                    a1.append(a[0])
-                    a2.append(a[1])
-                    a3.append(a[2])
-                for a in aa:
-                    a3a.append(a[0])
-                a1 = np.asarray(a1)
-                a1 = np.reshape(a1, (size[1], size[0]))
-                a2 = np.asarray(a2)
-                a2 = np.reshape(a2, (size[0], size[1]))
-                a3 = np.asarray(a3)
-                a3 = np.reshape(a3, (size[0], size[1]))
-                a3a = np.asarray(a3a)
-                a3a = np.reshape(a3a, (size[1], size[0]))
+                        #print 'D: ', d, ' ,', dd
+                        #print 'ALL ',len(all_pixels)
 
-                #all.append(a2)
-                #all.append(a3)
+                        #plt.show()
+                        #print 'o: ',all_pixels[0]
+                        all = list()
+                        #a1 = list()
+                        a2 = list()
+                        #a3 = list()
+                        #a3a = list()
+                        for a in all_pixels:
+                            #a1.append(a[0])
+                            a2.append(a[1])
+                            #a3.append(a[2])
+                        #for a in aa:
+                        #    a3a.append(a[0])
+                        #a1 = np.asarray(a1)
+                        #a1 = np.reshape(a1, (size[1], size[0]))
+                        a2 = np.asarray(a2)
+                        a2 = np.reshape(a2, (size[0], size[1]))
+                        #a3 = np.asarray(a3)
+                        #a3 = np.reshape(a3, (size[0], size[1]))
+                        #a3a = np.asarray(a3a)
+                        #a3a = np.reshape(a3a, (size[1], size[0]))
+
+                        #all.append(a2)
+                        #all.append(a3)
 
 
 
-                #if 'density' in filename:
-                    #plt.matshow(a3a)  # ll_pixels)
-                    #plt.show()
-                a2=np.rot90(a2)
-                a2=np.flipud(a2)
-                all.append(a2)
-                all = np.asarray(all)
-                print 'a2 ',a2.shape, ', ' ,all.shape
-                if 'density' in filename:
-                    out.append(a2)
-                    all_pixels=[item for sublist in a2 for item in sublist]#in all_pixels
-                    output_list.append(all_pixels)
-                    # output_list.append(all_pixels2)
-                    # output_list.append(all_pixels3)
-                    # output_list.append(all_pixels4)
-                else:
-#                    all_pixels = [item for sublist in all_pixels for item in sublist]
+                        #if 'density' in filename:
+                        #plt.matshow(a2)  # ll_pixels)
+                        #plt.show()
+                        a2=np.rot90(a2)
+                        a2=np.flipud(a2)
+                        all.append(a2)
+                        all = np.asarray(all)
+                        #print 'a2 ',a2.shape, ', ' ,all.shape
+                        if 'density' in filename:
+                            ou=list()
+                            out_pixels = [item for sublist in a2 for item in sublist]  # in all_pixels
+                            for p in out_pixels:
+                                if p==0:
+                                    ou.extend([1,0,0])
+                                elif p==1:
+                                    ou.extend([0,1,0])
+                                else:
+                                    ou.extend([0,0,1])
+                            #ou=np.asarray(ou)
 
-                    #print 'all sh ',all.shape
+                            #out.append(ou)
+                            #all_pixels=[item for sublist in a2 for item in sublist]#in all_pixels
+                            output_list.append(ou)#all_pixels)
+                            out.append(a2)
+                            # output_list.append(all_pixels2)
+                            # output_list.append(all_pixels3)
+                            # output_list.append(all_pixels4)
+                        else:
+        #                    all_pixels = [item for sublist in all_pixels for item in sublist]
 
-                    #print 'SHAPE ',all.shape
-                    #print 'a3 ',a3.shape
-                    image_list.append(all)#_pixels)
-                    # image_list.append(all_pixels2)
-                    # image_list.append(all_pixels3)
-                    # image_list.append(all_pixels4)
+                            #print 'all sh ',all.shape
 
-                #print len(image_list), ' ', len(output_list)
+                            #print 'SHAPE ',all.shape
+                            #print 'a3 ',a3.shape
+                            image_list.append(all)#_pixels)
+                            # image_list.append(all_pixels2)
+                            # image_list.append(all_pixels3)
+                            # image_list.append(all_pixels4)
+
+                        #print len(image_list), ' ', len(output_list)
 
         #break
 #np.asarray(a)
+
 load_files()
-#for i in range(len(image_list)):
-    #print 'ii: ',i
+#print 'o ',output_list[0]
+
+for i in range(len(image_list)):
+    print 'ii: ',i
     #plt.matshow(image_list[i][0])
     #plt.show()
     #plt.matshow(out[i])
     #plt.show()
-    #print '==='
+    print '==='
 
 
         #print 'pix ',len(all_pixels)#im.size
@@ -223,14 +261,24 @@ def load_dataset():
     dataset_size2 = len(X_test)
     #X_test = X_test.reshape(dataset_size2, -1)
 
-    X_train=X_train[:50000]
-    y_train = y_train[:50000]
+    X_train=X_train[:10000]
+    y_train = y_train[:10000]
     y_train2=list()
     y_test2=list()
+    c=0
     for y in y_train:
-        y_train2.append((y,2))
+        c+=1
+        if c%2==0:
+            y_train2.append((1,0,0,0,0,1))#((y,0),(0,1)))
+        else:
+            y_train2.append((0,1,0,1,0,0))#((0,y), (1,0)))
     for y in y_test:
-        y_test2.append((y,2))
+        c+=1
+        if c%2==0:
+            y_test2.append((1,0,0,1,0,0))#(((y,0), (0,1)))
+        else:
+            y_test2.append((0,1,0,1,0,0))#(((0,y), (1,0)))
+        #y_test2.append((y,c%3))
 
     #print y_train
     #X_test = X_test[:100]
@@ -267,9 +315,9 @@ def createConv(attributes,labels,data,results):
                 ('maxpool1', layers.MaxPool2DLayer),
                 ('conv2d2', layers.Conv2DLayer),
                 ('maxpool2', layers.MaxPool2DLayer),
-                ('dropout1', layers.DropoutLayer),
+                #('dropout1', layers.DropoutLayer),
                 ('dense', layers.DenseLayer),
-                ('dropout2', layers.DropoutLayer),
+                #('dropout2', layers.DropoutLayer),
                 ('output', layers.DenseLayer),
                 ],
         # input layer
@@ -288,22 +336,22 @@ def createConv(attributes,labels,data,results):
         # layer maxpool2
         maxpool2_pool_size=(2, 2),
         # dropout1
-        dropout1_p=0.5,
+        #dropout1_p=0.5,
         # dense
-        dense_num_units=256,
+        dense_num_units=size[0]*size[1],#256,
         dense_nonlinearity=lasagne.nonlinearities.rectify,
         # dropout2
-        dropout2_p=0.5,
+        #dropout2_p=0.5,
         # output
         output_nonlinearity=lasagne.nonlinearities.softmax,#rectify,#softmax,
-        output_shape=(3,size[1],size[0]),
-#        output_num_units=size[0]*size[1],#*3,
+        #output_shape=(1, 2),#,size[1],size[0]),
+        output_num_units=3*size[0]*size[1],#*3,
         # optimization method params
         update=nesterov_momentum,
         update_learning_rate=0.01,
         update_momentum=0.9,
-        max_epochs=2,
-        verbose=1,
+        max_epochs=10,
+        verbose=1,#,
         regression=True
         )
     # Train the network
@@ -313,13 +361,39 @@ def createConv(attributes,labels,data,results):
 
     i=0
     for pr in preds:
-        pr=np.reshape(pr,(size[0],size[1]))
-        pr = np.rot90(pr)
-        pr = np.flipud(pr)
-        for p in pr:
-            print 'PR: ',p
-        plt.matshow(pr)
-        plt.show()
+
+        print 'pr ',pr
+        print 'len ',pr.size
+        if True:
+            ind=0
+            arr=list()#np.array(int)
+            while ind<pr.size:
+                res=0
+                m=max(pr[ind],pr[ind+1],pr[ind+2])
+                if pr[ind]==m:
+                    arr.append(50)
+                elif pr[ind+1]==m:
+                    arr.append(125)
+                elif pr[ind+2]==m:
+                    arr.append(255)
+                else:
+                    print 'BAD', pr[ind],pr[ind+1],pr[ind+2]
+                    pr[ind]=0
+                ind+=3
+            arr=np.asarray(arr)
+            print 'arr',arr
+            print 'lenarr ',arr.size
+            pr=arr
+
+            pr=np.reshape(pr,(size[0],size[1]))
+            pr = np.rot90(pr)
+            pr = np.flipud(pr)
+            plt.matshow(pr)
+            plt.show()
+        #for p in pr:
+        print 'PR: ',pr
+        #plt.matshow(pr)
+        #plt.show()
         plt.matshow(X_test[i][0])
         i+=1
         plt.show()
@@ -348,7 +422,7 @@ def compare(result, ground_truth):
     return [good, bad]
 
 #def load_mnist():
-set=load_dataset()
+#set=load_dataset()
 
 #print 'so ',set[0]
 #print 'l so ',len(set[0][0])
@@ -357,19 +431,22 @@ set=load_dataset()
 #result=createNeural(set[0], set[1],set[4])
 #print 'im ',len(image_list)
 #Y=range(len(image_list))#
-X = [image_list[:75],image_list[75:]]#int(len(image_list) * .25) : int(len(image_list) * .75)]
 
-print 'im ',image_list[0]
-print 'len im ',len(image_list[0])
+
+X = [image_list[:int(0.75*len(image_list))],image_list[int(0.75*len(image_list)):]]#int(len(image_list) * .25) : int(len(image_list) * .75)]
+#print ': ',X
+#print 'im ',image_list[0]
+#print 'len im ',len(image_list[0])
 #for x in X[0]:
 #    print 'x:',len(x)
 
 #for x in X[1]:
 #    print 'x1:',len(x)
-Y = [output_list[:75],output_list[75:]]#int(len(image_list) * .25) : int(len(image_list) * .75)]
 
-print 'j ',len(Y[0][0])
-print 'out ',output_list[0][0] #"[Y] ",len(Y[0])," . 147456"
+Y = [output_list[:int(0.75*len(output_list))],output_list[int(0.75*len(output_list)):]]#int(len(image_list) * .25) : int(len(image_list) * .75)]
+#print '>', Y
+#print 'j ',len(Y[0][0])
+#print 'out ',output_list[0][0] #"[Y] ",len(Y[0])," . 147456"
 
 #Y=np.asarray(Y)
 
