@@ -14,6 +14,8 @@ import lasagne
 from lasagne import layers
 from lasagne.updates import nesterov_momentum
 from nolearn.lasagne import NeuralNet
+import theano.sandbox.cuda
+
 from nolearn.lasagne import visualize
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
@@ -24,10 +26,12 @@ from PIL import Image
 from os.path import isfile, join
 from os import listdir
 
+theano.sandbox.cuda.use("gpu0")
+print 'gpu?'
 path="/home/olusiak/Obrazy/densities/"
 image_list=list()
 output_list=list()
-out=list()
+#out=list()
 files = [f for f in listdir(path) if isfile(join(path, f))]
 ran=10
 ratio=8
@@ -75,8 +79,8 @@ def load_files():
         pix = im.load()
         #plt.imshow(im)
         #plt.show()
-        for ox in range(0,1000,10):
-            for oy in range(0,1000,10):
+        for ox in range(0,200,20):
+            for oy in range(0,180,20):
                 for i in range(ran):
                     try:
                         test = ox + size[0] * i
@@ -193,7 +197,7 @@ def load_files():
                             #out.append(ou)
                             #all_pixels=[item for sublist in a2 for item in sublist]#in all_pixels
                             output_list.append(ou)#all_pixels)
-                            out.append(a2)
+                            #out.append(a2)
                             # output_list.append(all_pixels2)
                             # output_list.append(all_pixels3)
                             # output_list.append(all_pixels4)
@@ -223,6 +227,35 @@ for i in range(len(image_list)):
     #plt.show()
     #plt.matshow(out[i])
     #plt.show()
+
+    #pr=output_list[i]
+    #pr=np.asarray(pr)
+    #arr = list()  # np.array(int)
+    #ind=0
+    #while ind < pr.size:
+    #    res = 0
+    #    m = max(pr[ind], pr[ind + 1], pr[ind + 2])
+    #    if pr[ind] == m:
+    #        arr.append(50)
+    #    elif pr[ind + 1] == m:
+    #        arr.append(125)
+    #    elif pr[ind + 2] == m:
+    #        arr.append(255)
+    #    else:
+    #        print 'BAD', pr[ind], pr[ind + 1], pr[ind + 2]
+    #        pr[ind] = 0
+    #    ind += 3
+    #arr = np.asarray(arr)
+    #print 'arr', arr
+    #print 'lenarr ', arr.size
+    #pr = arr
+
+    #pr = np.reshape(pr, (size[1], size[0]))
+
+   # plt.matshow(pr)
+    #plt.show()
+
+
     print '==='
 
 
@@ -315,9 +348,9 @@ def createConv(attributes,labels,data,results):
                 ('maxpool1', layers.MaxPool2DLayer),
                 ('conv2d2', layers.Conv2DLayer),
                 ('maxpool2', layers.MaxPool2DLayer),
-                #('dropout1', layers.DropoutLayer),
+                ('dropout1', layers.DropoutLayer),
                 ('dense', layers.DenseLayer),
-                #('dropout2', layers.DropoutLayer),
+                ('dropout2', layers.DropoutLayer),
                 ('output', layers.DenseLayer),
                 ],
         # input layer
@@ -336,12 +369,12 @@ def createConv(attributes,labels,data,results):
         # layer maxpool2
         maxpool2_pool_size=(2, 2),
         # dropout1
-        #dropout1_p=0.5,
+        dropout1_p=0.5,
         # dense
         dense_num_units=size[0]*size[1],#256,
         dense_nonlinearity=lasagne.nonlinearities.rectify,
         # dropout2
-        #dropout2_p=0.5,
+        dropout2_p=0.5,
         # output
         output_nonlinearity=lasagne.nonlinearities.softmax,#rectify,#softmax,
         #output_shape=(1, 2),#,size[1],size[0]),
@@ -385,9 +418,9 @@ def createConv(attributes,labels,data,results):
             print 'lenarr ',arr.size
             pr=arr
 
-            pr=np.reshape(pr,(size[0],size[1]))
-            pr = np.rot90(pr)
-            pr = np.flipud(pr)
+            pr=np.reshape(pr,(size[1],size[0]))
+            #pr = np.rot90(pr)
+            #pr = np.flipud(pr)
             plt.matshow(pr)
             plt.show()
         #for p in pr:
@@ -433,7 +466,7 @@ def compare(result, ground_truth):
 #Y=range(len(image_list))#
 
 
-X = [image_list[:int(0.75*len(image_list))],image_list[int(0.75*len(image_list)):]]#int(len(image_list) * .25) : int(len(image_list) * .75)]
+
 #print ': ',X
 #print 'im ',image_list[0]
 #print 'len im ',len(image_list[0])
@@ -442,7 +475,36 @@ X = [image_list[:int(0.75*len(image_list))],image_list[int(0.75*len(image_list))
 
 #for x in X[1]:
 #    print 'x1:',len(x)
+#print 'out ',output_list[0]
+counterr=0
 
+rem=list()
+ind=0
+for lista in output_list:
+
+    x=True
+    #for elem in lista:
+    i=0
+    while i<len(lista):
+        if not (lista[i]==1 and lista[i+1]==0 and lista[i+2]==0):
+            x=False
+            break
+        i+=3
+        rem.append(ind)#lista)
+    if not x:
+        counterr+=1
+    ind+=1
+counterr=counterr*3/4
+
+
+for i in reversed(range(counterr)):
+    output_list.pop(rem[i])
+    image_list.pop(rem[i])
+
+print 'COUNT ',len(output_list), ' ',len(image_list)#counterr
+
+X = [image_list[:int(0.75*len(image_list))],image_list[int(0.75*len(image_list)):]]#int(len(image_list) * .25) : int(len(image_list) * .75)]
+print 'IMA ',len(image_list)
 Y = [output_list[:int(0.75*len(output_list))],output_list[int(0.75*len(output_list)):]]#int(len(image_list) * .25) : int(len(image_list) * .75)]
 #print '>', Y
 #print 'j ',len(Y[0][0])
