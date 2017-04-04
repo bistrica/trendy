@@ -3,10 +3,26 @@ import cv2
 from matplotlib import pyplot as plt
 from matplotlib import colors
 from PIL import Image
-
+import numpy as np
+from sklearn.cluster import MeanShift, estimate_bandwidth
+from sklearn.datasets.samples_generator import make_blobs
+import matplotlib.pyplot as plt
+from itertools import cycle
+from PIL import Image
+import statistics
+from statistics import median
+import scipy.misc
+from scipy.ndimage.interpolation import zoom
 import pylab
+ratio=1
+size_orig = 1536/ratio,2048/ratio
+window=(30,30)
+img = cv2.imread('/home/olusiak/Obrazy/rois/10978_13_001.png-1.jpg')#41136_001.png-2.jpg')# densities/143_13_001.png')#558_13_002.png')#fotoscale.jpg')143_13_001.png')#
 
-img = cv2.imread('/home/olusiak/Obrazy/rois/10978_13_001.png-2.jpg')#41136_001.png-2.jpg')# densities/143_13_001.png')#558_13_002.png')#fotoscale.jpg')143_13_001.png')#
+#img = Image.open('/home/olusiak/Obrazy/rois/10978_13_001.png-2.jpg')
+#img.thumbnail(size_orig, Image.ANTIALIAS)
+#img=zoom(img, 0.25)
+#img=scipy.misc.imresize(img, size_orig)
 #hsv=colors.rgb_to_hsv(img)
 #plt.imshow(hsv)
 #plt.show()
@@ -50,14 +66,14 @@ for k in data.keys():
 print 'key: ',id,' - ',max
 id-=15
 
-plt.imshow(img)
-plt.show()
+#plt.imshow(img)
+#plt.show()
 
 
 
 
-plt.hist(gray.ravel(), bins=256, range=(0.0, 254.0))#, fc='k', ec='k')
-plt.show()
+#plt.hist(gray.ravel(), bins=256, range=(0.0, 254.0))#, fc='k', ec='k')
+#plt.show()
 
 
 #i=Image.open('/home/olusiak/water_coins.jpg').convert('L')
@@ -67,30 +83,24 @@ print '----'
 #i.show()
 #gray = cv2.cvtColor(i,cv2.COLOR_BGR2GRAY)
 #thresh=gray
+#plt.matshow(gray)
+#plt.show()
+
+#laplacian = cv2.Laplacian(img,cv2.CV_64F)
+#plt.matshow(laplacian)#,cmap='gray')
+#plt.show()
+
 ret, thresh = cv2.threshold(gray,id,255,cv2.ADAPTIVE_THRESH_MEAN_C+cv2.THRESH_BINARY_INV)#+cv2.THRESH_OTSU)#cv2.ADAPTIVE_THRESH_MEAN_C+
 
 #ret, threshM = cv2.threshold(grayM,120,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)#cv2.ADAPTIVE_THRESH_MEAN_C+
 #plt.imshow(threshM)
 #plt.show()
-plt.imshow(thresh)
-plt.show()
+#plt.imshow(thresh)
+#plt.show()
 #edges = cv2.Canny(thresh,50,100)
 #plt.matshow(edges)
 #plt.show()
 
-#circles = cv2.HoughCircles(thresh,cv2.HOUGH_GRADIENT,1,20,
-#                            param1=50,param2=30,minRadius=0,maxRadius=0)
-
-#circles = np.uint16(np.around(circles))
-#for i in circles[0,:]:
-#    print' i',i
-    # draw the outer circle
-#    cv2.circle(thresh,(i[0],i[1]),i[2],(0,255,0),2)
-    # draw the center of the circle
-#    cv2.circle(thresh,(i[0],i[1]),2,(0,0,255),3)
-
-#plt.imshow(thresh)#,cmap='gray')
-#plt.show()
 #rgb=colors.hsv_to_rgb(thresh)#?
 #plt.imshow(rgb)#?
 #plt.show()#?
@@ -104,16 +114,85 @@ plt.show()
 kernel = np.ones((3,3),np.uint8)
 opening = cv2.morphologyEx(thresh,cv2.MORPH_OPEN,kernel, iterations = 5)
 print 'open'
-plt.imshow(opening)#,cmap='gray')
-plt.show()
+#plt.imshow(opening)#,cmap='gray')
+#plt.show()
 
+
+#circles = cv2.HoughCircles(opening,cv2.HOUGH_GRADIENT,1,20,
+#                            param1=50,param2=30,minRadius=0,maxRadius=0)
+def mean_shift():
+    print 'MEAN SHI'
+    flat_image = np.reshape(gray, [-1, 3])
+    print 'fl'
+    # Estimate bandwidth
+    bandwidth2 = estimate_bandwidth(flat_image,
+                                    quantile=.2, n_samples=500)
+    print 'est'
+    ms = MeanShift(bandwidth2, bin_seeding=True)
+    print 'ms'
+    ms.fit(flat_image)
+    print 'ms f'
+    labels = ms.labels_
+
+    # Plot image vs segmented image
+    plt.figure(2)
+    plt.subplot(2, 1, 1)
+    plt.imshow(gray)
+    plt.axis('off')
+    plt.subplot(2, 1, 2)
+    plt.imshow(np.reshape(labels, [851, 1280]))
+    plt.axis('off')
+    plt.show()
+#circles = np.uint16(np.around(circles))
+#for i in circles[0,:]:
+#    print' i',i
+    # draw the outer circle
+#    cv2.circle(opening,(i[0],i[1]),i[2],(0,255,0),2)
+    # draw the center of the circle
+#    cv2.circle(opening,(i[0],i[1]),2,(0,0,255),3)
+
+#plt.imshow(opening)#,cmap='gray')
+#plt.show()
+print 'PEI'
+piet_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+
+# threshold for hue channel in blue range
+blue_min = np.array([100, 50, 50], np.uint8)
+blue_max = np.array([140, 255, 255], np.uint8)
+threshold_blue_img = cv2.inRange(piet_hsv, blue_min, blue_max)
+#plt.imshow(threshold_blue_img)
+#plt.show()
+#threshold_blue_img = cv2.cvtColor(threshold_blue_img, cv2.COLOR_GRAY2RGB)
+opening2 = cv2.morphologyEx(threshold_blue_img,cv2.MORPH_OPEN,kernel, iterations = 5)
+#plt.imshow(opening2)
+#plt.show()
+
+def hsv_hist():
+    #mean_shift()
+    print 'hsv'
+    im_hsv = colors.rgb_to_hsv(img[...,:3])
+    # pull out just the s channel
+    lu=im_hsv[...,1].flatten()
+    lu=lu.tolist()
+    print 'lu ',lu
+    i=list()
+    for ii in lu:
+        if ii!=0:
+            i.append(ii)
+    lu.remove(0.)
+    lu=np.asarray(i)
+    print 'lu ',lu
+    plt.hist(lu,250)
+    #plt.show()
 # sure background area
 sure_bg = cv2.dilate(opening,kernel,iterations=3)
 
+
+
 # Finding sure foreground area
 dist_transform = cv2.distanceTransform(opening,cv2.DIST_L2,5)#OPENING
-plt.imshow(dist_transform)
-plt.show()
+#plt.imshow(dist_transform)
+#plt.show()
 
 #em=cv2.EM(2)
 #em = cv2.ml.EM_create()
@@ -124,14 +203,163 @@ plt.show()
 #plt.imshow(means)#opening)#,cmap='gray')
 #plt.show()
 
-ret, sure_fg = cv2.threshold(dist_transform,0.5*dist_transform.max(),255,0)
+ret, sure_fg = cv2.threshold(dist_transform,1.2*dist_transform.min(),255,0)
 
+#fg=cv2.cvtColor(sure_fg,cv2.COLOR_BGR2GRAY)
+off=0
+off2=0
+
+#v=400
+ran=4
+ox=off
+oy=off2
+pix=sure_fg
+#size=(size_orig[0]/ran,size_orig[1]/ran)
+size=(size_orig[1]/ran,size_orig[0]/ran)
+
+new_pic=list()#np.array(int)
+pics=list()
+for i in range(sure_fg.size):
+    new_pic.append(255.0)
+new_pic=np.asarray(new_pic,float)
+new_pic=np.reshape(new_pic,sure_fg.shape)
+cz=0
+sett=set()
+maxes=list()
+for i in range(ran):
+    try:
+        test = ox + size[1] * i
+        test = pix[test, 0]
+        #test = ox + size[1] * (i + 1)
+        #test = pix[test, 0]
+    except:
+        print 'cont'
+        continue
+    for j in range(ran):  # i, ran, 1):
+        all_pixels = list()  # np.array(int)
+
+        try:
+
+            test = oy + size[0] * j
+            test = pix[0, test]
+            #test = oy + size[0] * (j + 1)
+            #test = pix[0, test]
+        except:
+            print 'cont3'
+            continue
+        l = list()
+
+        for x in range(ox + size[1] * i, ox + size[1] * (i + 1), 1):
+
+            for y in range(oy+size[0] * j, oy+size[0] * (j + 1), 1):
+
+                l.append(sure_fg[x][y])
+        l = np.asarray(l)
+        #print 'll ', l.shape, l.size
+        l = np.fromstring(l.tobytes(), dtype=np.uint8)
+        l = np.reshape(l, (size[1], size[0], 4))
+        l = cv2.cvtColor(l, cv2.COLOR_BGR2GRAY)
+
+        l = cv2.distanceTransform(l, cv2.DIST_L2, 5)  #
+        l = np.asarray(l,float)
+        print len(l)
+        pics.append(l)
+        plt.matshow(l)
+        plt.show()
+        #l=np.asarray(l)
+        l = np.reshape(l, l.size)
+        #f=l.tolist()
+        #print f
+        ind=0
+        print 'max ', l.max()
+        if l.max()!=0:
+            maxes.append(l.max())
+        if cz!=-1:
+            for x in range(ox + size[1] * i, ox + size[1] * (i + 1), 1):
+
+                for y in range(oy+size[0] * j, oy+size[0] * (j + 1), 1):
+                    #if (x,y) in sett:
+                        #print '!!!',x,y
+                        #h=9/0
+                    sett.add((x,y))
+                    #print 'x y ',x,y
+                    #print 'L ',l[ind]
+                    #l=np.asarray(l)
+
+                    new_pic[x,y]=l[ind]
+                    #if ind>729476 and ind<735370:
+                        #print 'N ',ind,' ',new_pic[x,y]
+                    ind+=1
+        cz+=1
+        print ox + size[1] * i, ox + size[1] * (i + 1),' / ', oy+size[0] * j, oy+size[0] * (j + 1)
+        ind=0
+        for x in range(ox + size[1] * i, ox + size[1] * (i + 1), 1):
+
+            for y in range(oy + size[0] * j, oy + size[0] * (j + 1), 1):
+                #if ind>729476 and ind<735370:
+                    #print 'NN ',ind,' ',new_pic[x,y]
+                ind+=1
+        #new_pic=cv2.cvtColor(new_pic, cv2.COLOR_GRAY2BGR)
+        plt.matshow(new_pic)
+        plt.show()
+        #print 'll2 ', l.size
+
+        # l=cv2.cvtColor(l,cv2.COLOR_BGR2GRAY)
+
+        # print 'llg ',l.type
+
+print 'nm ',new_pic.max()
+ret, new_pic = cv2.threshold(new_pic,0.6*median(maxes),255,0)
+plt.matshow(new_pic)
+plt.show()
+x=0
+c=0
+#print 'sett ',sett
+for n in new_pic:
+    for ni in n:
+        #print 'N ',n#len(n)
+        if ni is None or ni==0:
+            c+=1
+
+            #print 'X None ',x
+        x+=1
+print 'no: ',x, '[',c
+plt.matshow(new_pic)
+
+plt.show()
+
+#for i in pics:
+#    plt.matshow(i)
+#    plt.show()
+#v=400
+#for i in range(0,v,1):
+#    for j in range(0,v,1):
+#        #print ': ',sure_fg[off+i][off2+j]
+#        l.append(sure_fg[off+i][off2+j])
+#print '::: ',len(l)
+#l=np.asarray(l)
+#print 'll ',l.shape, l.size
+#l=np.fromstring(l.tobytes(), dtype=np.uint8)
+#l=np.reshape(l,(v,v,4))
+#l=cv2.cvtColor(l,cv2.COLOR_BGR2GRAY)
+#print 'll2 ',l.size
+
+#l=cv2.cvtColor(l,cv2.COLOR_BGR2GRAY)
+
+#print 'llg ',l.type
+#l=cv2.distanceTransform(l,cv2.DIST_L2,5)#
+
+#plt.matshow(l)
+#plt.show()
 
 print 'ret'
 #plt.imshow(ret)
 #plt.show()
 plt.imshow(sure_fg)
 plt.show()
+
+print 'sure'
+#sure_fg=opening2
 sure_fg = cv2.erode(sure_fg,kernel,iterations=3)#3
 
 # Finding unknown region

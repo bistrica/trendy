@@ -12,6 +12,7 @@ import numpy as np
 import theano
 import lasagne
 from lasagne import layers
+from lasagne.layers import Conv2DLayer, TransposedConv2DLayer
 from lasagne.updates import nesterov_momentum
 from nolearn.lasagne import NeuralNet
 import theano.sandbox.cuda
@@ -45,6 +46,7 @@ def load_files():
     c=0
     files.sort()
     print files
+
     for filename in files:
 
 
@@ -85,7 +87,7 @@ def load_files():
                     try:
                         test = ox + size[0] * i
                         test = pix[test, 0]
-                        test = ox + size[0] * (i + 1)
+                        test = ox + size[0] * (i + 1) - 1
                         test = pix[test, 0]
                     except:
                         continue
@@ -99,7 +101,7 @@ def load_files():
 
                             test=oy+size[1] * j
                             test=pix[0,test]
-                            test=oy+size[1] * (j + 1)
+                            test=oy+size[1] * (j + 1) -1
                             test = pix[0, test]
                         except:
                             continue
@@ -107,7 +109,7 @@ def load_files():
                             #for j in range(ran):  # i, ran, 1):
                             if True:
 
-                                for y in range(size[1] * j, size[1] * (j + 1), 1):
+                                for y in range(oy+size[1] * j, oy+size[1] * (j + 1), 1):
                                     cpixel = pix[x, y]
                                     #if 'density' in filename:
                                     #    if pix[x,y][1]==255:
@@ -335,7 +337,8 @@ def createConv(attributes,labels,data,results):
     X_train=attributes
     print 'X_train ',len(X_train)
     print 'len X_train ', len(X_train[0])
-
+    for x in X_train:
+        print 'size ', x[0].size, x[0].shape
 
     y_train=labels
     X_test=data
@@ -348,10 +351,13 @@ def createConv(attributes,labels,data,results):
                 ('maxpool1', layers.MaxPool2DLayer),
                 ('conv2d2', layers.Conv2DLayer),
                 ('maxpool2', layers.MaxPool2DLayer),
+                ('conv2d3', layers.Conv2DLayer),
+                #('maxpool2', layers.MaxPool2DLayer),
                 ('dropout1', layers.DropoutLayer),
                 ('dense', layers.DenseLayer),
                 ('dropout2', layers.DropoutLayer),
-                ('output', layers.DenseLayer),
+
+                ('output', layers.DenseLayer)#TransposedConv2DLayer),#,
                 ],
         # input layer
         input_shape=(None,1, size[1],size[0]),
@@ -371,24 +377,35 @@ def createConv(attributes,labels,data,results):
         # dropout1
         dropout1_p=0.5,
         # dense
-        dense_num_units=size[0]*size[1],#256,
+        dense_num_units=size[0]*size[1]*60,
         dense_nonlinearity=lasagne.nonlinearities.rectify,
         # dropout2
         dropout2_p=0.5,
+        conv2d3_num_filters=32,
+        conv2d3_filter_size=(1, 1),
+        conv2d3_nonlinearity=lasagne.nonlinearities.rectify,
         # output
-        output_nonlinearity=lasagne.nonlinearities.softmax,#rectify,#softmax,
-        #output_shape=(1, 2),#,size[1],size[0]),
+        output_nonlinearity=lasagne.nonlinearities.softmax,
+        #output_num_filters=1,
+        #output_stride=(2,2),
+#        output_incoming=(None),
+        #output_filter_size=(2,2),
+        #output_output_size=(size[1],size[0]),
+        #output
         output_num_units=3*size[0]*size[1],#*3,
+        #output_output_size=(size[1],size[0]),
+        #output_incoming=(None,1,)
         # optimization method params
         update=nesterov_momentum,
-        update_learning_rate=0.01,
+        update_learning_rate=0.01,#0.01
         update_momentum=0.9,
-        max_epochs=10,
+        max_epochs=30,
         verbose=1,#,
         regression=True
         )
     # Train the network
     print 'yt ',len(y_train[0])
+
     nn = net1.fit(X_train, y_train)
     preds = net1.predict(X_test)
 
@@ -494,18 +511,19 @@ for lista in output_list:
     if not x:
         counterr+=1
     ind+=1
-counterr=counterr*3/4
+#counterr=counterr*3/4
 
 
-for i in reversed(range(counterr)):
-    output_list.pop(rem[i])
-    image_list.pop(rem[i])
+#for i in reversed(range(counterr)):
+#    output_list.pop(rem[i])
+#    image_list.pop(rem[i])
 
-print 'COUNT ',len(output_list), ' ',len(image_list)#counterr
+print 'COUNT ',len(output_list), ' ',len(image_list), counterr
 
-X = [image_list[:int(0.75*len(image_list))],image_list[int(0.75*len(image_list)):]]#int(len(image_list) * .25) : int(len(image_list) * .75)]
+per=0.9
+X = [image_list[:int(per*len(image_list))],image_list[int(per*len(image_list)):]]#int(len(image_list) * .25) : int(len(image_list) * .75)]
 print 'IMA ',len(image_list)
-Y = [output_list[:int(0.75*len(output_list))],output_list[int(0.75*len(output_list)):]]#int(len(image_list) * .25) : int(len(image_list) * .75)]
+Y = [output_list[:int(per*len(output_list))],output_list[int(per*len(output_list)):]]#int(len(image_list) * .25) : int(len(image_list) * .75)]
 #print '>', Y
 #print 'j ',len(Y[0][0])
 #print 'out ',output_list[0][0] #"[Y] ",len(Y[0])," . 147456"
