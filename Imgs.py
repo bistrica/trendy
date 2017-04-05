@@ -9,15 +9,46 @@ from sklearn.datasets.samples_generator import make_blobs
 import matplotlib.pyplot as plt
 from itertools import cycle
 from PIL import Image
-import statistics
-from statistics import median
+#import statistics
+#from statistics import median
 import scipy.misc
 from scipy.ndimage.interpolation import zoom
 import pylab
+from skimage.color import rgb2gray
+from skimage import data
+from skimage.filters import gaussian
+from skimage.segmentation import active_contour
+
+import scipy
+
+
+img = cv2.imread('/home/olusiak/Obrazy/rois/41136_001.png-2.jpg')#data.astronaut()
+img = rgb2gray(img)
+
+s = np.linspace(0, 2*np.pi, 400)
+x = 414 + 100*np.cos(s)
+y = 594 + 100*np.sin(s)
+init = np.array([x, y]).T
+
+
+if True:
+    snake = active_contour(gaussian(img, 3),
+                           init, alpha=0.015, beta=10, gamma=0.001)
+
+    fig = plt.figure(figsize=(7, 7))
+    ax = fig.add_subplot(111)
+    plt.gray()
+    ax.imshow(img)
+    ax.plot(init[:, 0], init[:, 1], '--r', lw=3)
+    ax.plot(snake[:, 0], snake[:, 1], '-b', lw=3)
+    ax.set_xticks([]), ax.set_yticks([])
+    ax.axis([0, img.shape[1], img.shape[0], 0])
+plt.show()
+
 ratio=1
 size_orig = 1536/ratio,2048/ratio
 window=(30,30)
-img = cv2.imread('/home/olusiak/Obrazy/rois/10978_13_001.png-1.jpg')#41136_001.png-2.jpg')# densities/143_13_001.png')#558_13_002.png')#fotoscale.jpg')143_13_001.png')#
+img = cv2.imread('/home/olusiak/Obrazy/rois/41136_001.png-2.jpg')#10978_13_001.png-1.jpg')# densities/143_13_001.png')#558_13_002.png')#fotoscale.jpg')143_13_001.png')#
 
 #img = Image.open('/home/olusiak/Obrazy/rois/10978_13_001.png-2.jpg')
 #img.thumbnail(size_orig, Image.ANTIALIAS)
@@ -118,8 +149,8 @@ print 'open'
 #plt.show()
 
 
-#circles = cv2.HoughCircles(opening,cv2.HOUGH_GRADIENT,1,20,
-#                            param1=50,param2=30,minRadius=0,maxRadius=0)
+
+
 def mean_shift():
     print 'MEAN SHI'
     flat_image = np.reshape(gray, [-1, 3])
@@ -143,13 +174,7 @@ def mean_shift():
     plt.imshow(np.reshape(labels, [851, 1280]))
     plt.axis('off')
     plt.show()
-#circles = np.uint16(np.around(circles))
-#for i in circles[0,:]:
-#    print' i',i
-    # draw the outer circle
-#    cv2.circle(opening,(i[0],i[1]),i[2],(0,255,0),2)
-    # draw the center of the circle
-#    cv2.circle(opening,(i[0],i[1]),2,(0,0,255),3)
+
 
 #plt.imshow(opening)#,cmap='gray')
 #plt.show()
@@ -210,7 +235,7 @@ off=0
 off2=0
 
 #v=400
-ran=4
+ran=20
 ox=off
 oy=off2
 pix=sure_fg
@@ -262,18 +287,22 @@ for i in range(ran):
 
         l = cv2.distanceTransform(l, cv2.DIST_L2, 5)  #
         l = np.asarray(l,float)
+
+        print 'max ', l.max()
+
+        if l.max() != 0:
+            maxes.append(l.max())
+        ret,l = cv2.threshold(l, 0.8 * l.max(), 255, cv2.ADAPTIVE_THRESH_MEAN_C + cv2.THRESH_BINARY)#_INV)
         print len(l)
         pics.append(l)
-        plt.matshow(l)
-        plt.show()
+   #     plt.matshow(l)
+   #     plt.show()
         #l=np.asarray(l)
         l = np.reshape(l, l.size)
         #f=l.tolist()
         #print f
         ind=0
-        print 'max ', l.max()
-        if l.max()!=0:
-            maxes.append(l.max())
+
         if cz!=-1:
             for x in range(ox + size[1] * i, ox + size[1] * (i + 1), 1):
 
@@ -293,24 +322,26 @@ for i in range(ran):
         cz+=1
         print ox + size[1] * i, ox + size[1] * (i + 1),' / ', oy+size[0] * j, oy+size[0] * (j + 1)
         ind=0
-        for x in range(ox + size[1] * i, ox + size[1] * (i + 1), 1):
+#        for x in range(ox + size[1] * i, ox + size[1] * (i + 1), 1):
 
-            for y in range(oy + size[0] * j, oy + size[0] * (j + 1), 1):
+#            for y in range(oy + size[0] * j, oy + size[0] * (j + 1), 1):
                 #if ind>729476 and ind<735370:
                     #print 'NN ',ind,' ',new_pic[x,y]
-                ind+=1
+ #               ind+=1
         #new_pic=cv2.cvtColor(new_pic, cv2.COLOR_GRAY2BGR)
-        plt.matshow(new_pic)
-        plt.show()
+        #plt.matshow(new_pic)
+        #plt.show()
         #print 'll2 ', l.size
 
         # l=cv2.cvtColor(l,cv2.COLOR_BGR2GRAY)
 
         # print 'llg ',l.type
 
-print 'nm ',new_pic.max()
-ret, new_pic = cv2.threshold(new_pic,0.6*median(maxes),255,0)
 plt.matshow(new_pic)
+plt.show()
+print 'nm ',new_pic.max()
+ret, new_pic2 = cv2.threshold(new_pic,0.6*maxes[len(maxes)/2],255,0)
+plt.matshow(new_pic2)
 plt.show()
 x=0
 c=0
@@ -355,13 +386,15 @@ plt.show()
 print 'ret'
 #plt.imshow(ret)
 #plt.show()
-plt.imshow(sure_fg)
-plt.show()
+
+#plt.imshow(sure_fg)
+#plt.show()
 
 print 'sure'
 #sure_fg=opening2
 sure_fg = cv2.erode(sure_fg,kernel,iterations=3)#3
 
+sure_fg=np.uint8(new_pic)
 # Finding unknown region
 sure_fg = np.uint8(sure_fg)
 unknown = cv2.subtract(sure_bg,sure_fg)
@@ -376,11 +409,12 @@ plt.show()
 #plt.imshow(unknown)#sure_fg)
 #plt.show()
 # Marker labelling
+
 ret, markers = cv2.connectedComponents(sure_fg)
 
 # Add one to all labels so that sure background is not 0, but 1
 markers = markers+1
-
+print 'mark'
 plt.imshow(markers)
 plt.show()
 # Now, mark the region of unknown with zero
@@ -394,5 +428,19 @@ print img
 
 #plt.matshow(img)
 #pylab.show()
+
+
 plt.imshow(markers)#,cmap='gray')
 plt.show()
+#markers= cv2.cvtColor(markers,cv2.COLOR_BGR2GRAY)
+#circles = cv2.HoughCircles(markers,cv2.HOUGH_GRADIENT,1,20,
+       #                     param1=50,param2=30,minRadius=0,maxRadius=0)
+#circles = np.uint16(np.around(markers))
+#for i in circles[0,:]:
+#    print' i',i
+    # draw the outer circle
+#    cv2.circle(markers,(i[0],i[1]),i[2],(0,255,0),2)
+    # draw the center of the circle
+#    cv2.circle(markers,(i[0],i[1]),2,(0,0,255),3)
+#plt.imshow(markers)#,cmap='gray')
+#plt.show()
