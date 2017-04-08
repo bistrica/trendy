@@ -18,6 +18,7 @@ from skimage.color import rgb2gray
 from skimage import data
 from skimage.filters import gaussian
 from skimage.segmentation import active_contour
+from skimage import segmentation
 
 import scipy
 
@@ -25,25 +26,10 @@ import scipy
 img = cv2.imread('/home/olusiak/Obrazy/rois/41136_001.png-2.jpg')#data.astronaut()
 img = rgb2gray(img)
 
-s = np.linspace(0, 2*np.pi, 400)
-x = 414 + 100*np.cos(s)
-y = 594 + 100*np.sin(s)
-init = np.array([x, y]).T
 
 
-if True:
-    snake = active_contour(gaussian(img, 3),
-                           init, alpha=0.015, beta=10, gamma=0.001)
 
-    fig = plt.figure(figsize=(7, 7))
-    ax = fig.add_subplot(111)
-    plt.gray()
-    ax.imshow(img)
-    ax.plot(init[:, 0], init[:, 1], '--r', lw=3)
-    ax.plot(snake[:, 0], snake[:, 1], '-b', lw=3)
-    ax.set_xticks([]), ax.set_yticks([])
-    ax.axis([0, img.shape[1], img.shape[0], 0])
-plt.show()
+
 
 ratio=1
 size_orig = 1536/ratio,2048/ratio
@@ -235,7 +221,7 @@ off=0
 off2=0
 
 #v=400
-ran=20
+ran=2
 ox=off
 oy=off2
 pix=sure_fg
@@ -289,10 +275,43 @@ for i in range(ran):
         l = np.asarray(l,float)
 
         print 'max ', l.max()
-
+        max=l.max()
         if l.max() != 0:
             maxes.append(l.max())
-        ret,l = cv2.threshold(l, 0.8 * l.max(), 255, cv2.ADAPTIVE_THRESH_MEAN_C + cv2.THRESH_BINARY)#_INV)
+
+        ret, le = cv2.threshold(l, 0.8 * l.max(), 255, cv2.ADAPTIVE_THRESH_MEAN_C + cv2.THRESH_BINARY)  # _INV)
+
+        ####
+        if False:
+            plt.matshow(le)
+            plt.show()
+            for x1 in range(le.shape[0]):
+                for y1 in range(le.shape[1]):
+                    if le[x1,y1]==255:
+                        print '? ',x1,y1
+                        if True:
+                            s = np.linspace(0, 2 * np.pi, 400)
+                            x = x1 + 20 * np.cos(s)
+                            y = y1 + 20 * np.sin(s)
+                            init = np.array([x, y]).T
+
+                            snake = active_contour(gaussian(le, 3),
+                                                   init, alpha=0.015, beta=10, gamma=0.001)
+
+                            fig = plt.figure(figsize=(7, 7))
+                            ax = fig.add_subplot(111)
+                            plt.gray()
+                            ax.imshow(le)
+                            ax.plot(init[:, 0], init[:, 1], '--r', lw=3)
+                            ax.plot(snake[:, 0], snake[:, 1], '-b', lw=3)
+                            ax.set_xticks([]), ax.set_yticks([])
+                            ax.axis([0, img.shape[1], img.shape[0], 0])
+                            plt.show()
+
+        ###
+
+
+
         print len(l)
         pics.append(l)
    #     plt.matshow(l)
@@ -339,6 +358,11 @@ for i in range(ran):
 
 plt.matshow(new_pic)
 plt.show()
+
+
+
+
+
 print 'nm ',new_pic.max()
 ret, new_pic2 = cv2.threshold(new_pic,0.6*maxes[len(maxes)/2],255,0)
 plt.matshow(new_pic2)
@@ -394,7 +418,7 @@ print 'sure'
 #sure_fg=opening2
 sure_fg = cv2.erode(sure_fg,kernel,iterations=3)#3
 
-sure_fg=np.uint8(new_pic)
+#sure_fg=np.uint8(new_pic)
 # Finding unknown region
 sure_fg = np.uint8(sure_fg)
 unknown = cv2.subtract(sure_bg,sure_fg)
@@ -422,7 +446,8 @@ markers[unknown==255] = 0
 
 plt.imshow(img)#,cmap='gray')
 plt.show()
-markers = cv2.watershed(img,markers)
+fx=segmentation.random_walker(img, markers)
+#markers = cv2.watershed(img,markers)
 img[markers == -1] = [255,0,0]
 print img
 
