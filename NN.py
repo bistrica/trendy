@@ -27,6 +27,7 @@ from PIL import Image
 from os.path import isfile, join
 from os import listdir
 
+import theano.tensor as T
 theano.sandbox.cuda.use("gpu0")
 print 'gpu?'
 path="/home/olusiak/Obrazy/densities/"
@@ -198,8 +199,11 @@ def load_files():
 
                             #out.append(ou)
                             #all_pixels=[item for sublist in a2 for item in sublist]#in all_pixels
+                            out_pixels=np.asarray(out_pixels)
                             output_list.append(ou)#all_pixels)
-                            out.append(a2)
+                            #out_pixels=np.reshape(out_pixels,(1,1,out_pixels.size))
+                            a2=np.reshape(a2,(1,size[1],size[0]))
+                            out.append(a2)#out_pixels)#a2)
                             # output_list.append(all_pixels2)
                             # output_list.append(all_pixels3)
                             # output_list.append(all_pixels4)
@@ -345,6 +349,10 @@ def createConv(attributes,labels,data,results):
     y_test=results
     X_train=np.asarray(X_train)
     print 'sh ',X_train.shape[1:]
+
+    input_var = T.tensor4('X')
+    output_var = T.tensor4('X')
+
     net1 = NeuralNet(
         layers=[('input', layers.InputLayer),
                 ('conv2d1', layers.Conv2DLayer),
@@ -360,7 +368,7 @@ def createConv(attributes,labels,data,results):
                 ('output', layers.DenseLayer)#TransposedConv2DLayer),#,
                 ],
         # input layer
-        input_shape=(None,1, size[1],size[0]),
+        input_shape=(None,1, size[1],size[0]),#,input_var),
         # layer conv2d1
         conv2d1_num_filters=32,
         conv2d1_filter_size=(5, 5),
@@ -612,6 +620,7 @@ def createConv2(attributes, labels, data, results):
                 update_learning_rate=0.01,  # 0.01
                 update_momentum=0.9,
                 max_epochs=10,
+                y_tensor_type=T.tensor4,
                 verbose=1,  # ,
                 regression=True
             )
@@ -727,6 +736,8 @@ print 'COUNT ',len(output_list), ' ',len(image_list), counterr
 per=0.9
 X = [image_list[:int(per*len(image_list))],image_list[int(per*len(image_list)):]]#int(len(image_list) * .25) : int(len(image_list) * .75)]
 print 'IMA ',len(image_list)
+for im in image_list:
+    print '>',len(im[0])
 output_list=out
 Y = [output_list[:int(per*len(output_list))],output_list[int(per*len(output_list)):]]#int(len(image_list) * .25) : int(len(image_list) * .75)]
 #print '>', Y
