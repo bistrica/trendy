@@ -24,17 +24,16 @@ import scipy
 
 
 img = cv2.imread('/home/olusiak/Obrazy/rois/41136_001.png-2.jpg')#data.astronaut()
+
 img = rgb2gray(img)
 
 
 
-
-
-
-ratio=1
+ratio=8
 size_orig = 1536/ratio,2048/ratio
 window=(30,30)
 img = cv2.imread('/home/olusiak/Obrazy/rois/41136_001.png-2.jpg')#10978_13_001.png-1.jpg')# densities/143_13_001.png')#558_13_002.png')#fotoscale.jpg')143_13_001.png')#
+gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
 
 #img = Image.open('/home/olusiak/Obrazy/rois/10978_13_001.png-2.jpg')
 #img.thumbnail(size_orig, Image.ANTIALIAS)
@@ -45,7 +44,7 @@ img = cv2.imread('/home/olusiak/Obrazy/rois/41136_001.png-2.jpg')#10978_13_001.p
 #plt.show()
 #img=hsv
 
-gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+
 
 
 #imgM = cv2.imread('/home/olusiak/Obrazy/densities/558_13_002Markers_Counter Window -.png_density.png')
@@ -109,6 +108,8 @@ print '----'
 
 ret, thresh = cv2.threshold(gray,id,255,cv2.ADAPTIVE_THRESH_MEAN_C+cv2.THRESH_BINARY_INV)#+cv2.THRESH_OTSU)#cv2.ADAPTIVE_THRESH_MEAN_C+
 
+
+
 #ret, threshM = cv2.threshold(grayM,120,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)#cv2.ADAPTIVE_THRESH_MEAN_C+
 #plt.imshow(threshM)
 #plt.show()
@@ -134,8 +135,49 @@ print 'open'
 #plt.imshow(opening)#,cmap='gray')
 #plt.show()
 
+#img=opening
 
+#laplacian = cv2.Laplacian(img,cv2.CV_64F)
+#sobelx = cv2.Sobel(img,cv2.CV_64F,1,0,ksize=5)
+sobely = cv2.Sobel(opening,cv2.CV_64F,0,1,ksize=5)
 
+gradient = cv2.morphologyEx(opening, cv2.MORPH_GRADIENT, kernel2)
+plt.matshow(gradient)
+plt.show()
+
+element = cv2.getStructuringElement(cv2.MORPH_CROSS, (3, 3))
+done = False
+size = np.size(gradient)
+skel = np.zeros(gradient.shape,np.uint8)
+while (not done):
+    print 'a'
+    eroded = cv2.erode(gradient, element)
+    temp = cv2.dilate(eroded, element)
+    temp = cv2.subtract(gradient, temp)
+    skel = cv2.bitwise_or(skel, temp)
+    gradient = eroded.copy()
+
+    zeros = size - cv2.countNonZero(gradient)
+    if zeros == size:
+        done = True
+    plt.matshow(gradient)
+    plt.show()
+plt.matshow(gradient)
+plt.show()
+gradient=opening
+#ret, markers = cv2.connectedComponents(gradient)
+im2, contours, hierarchy = cv2.findContours(gradient,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+cv2.drawContours(gradient, contours, 4, (150,255,150), -1)
+#cv2.drawContours(gradient, gradient, contourID, COLOR, Core.FILLED);
+#cv2.fillPoly(gradient, pts =gradient, color=(255,255,255))
+sobely=gradient
+#plt.subplot(2,1,1),plt.imshow(img,cmap = 'gray')
+#plt.title('Original'), plt.xticks([]), plt.yticks([])
+#plt.subplot(2,2,2),plt.imshow(sobely,cmap = 'gray')
+#plt.title('Sobel Y'), plt.xticks([]), plt.yticks([])
+
+plt.imshow(sobely,cmap = 'gray')
+plt.show()
 
 def mean_shift():
     print 'MEAN SHI'
@@ -317,6 +359,7 @@ for i in range(ran):
    #     plt.matshow(l)
    #     plt.show()
         #l=np.asarray(l)
+        #l=le
         l = np.reshape(l, l.size)
         #f=l.tolist()
         #print f
@@ -359,29 +402,30 @@ for i in range(ran):
 plt.matshow(new_pic)
 plt.show()
 
+#c=9/0
 
 
 
 
-print 'nm ',new_pic.max()
-ret, new_pic2 = cv2.threshold(new_pic,0.6*maxes[len(maxes)/2],255,0)
-plt.matshow(new_pic2)
-plt.show()
-x=0
-c=0
+#print 'nm ',new_pic.size, len(maxes)
+#ret, new_pic2 = cv2.threshold(new_pic,0.6*maxes[len(maxes)/2],255,0)
+#plt.matshow(new_pic2)
+#plt.show()
+#x=0
+#c=0
 #print 'sett ',sett
-for n in new_pic:
-    for ni in n:
-        #print 'N ',n#len(n)
-        if ni is None or ni==0:
-            c+=1
+#for n in new_pic:
+#    for ni in n:
+#        #print 'N ',n#len(n)
+#        if ni is None or ni==0:
+#            c+=1
 
             #print 'X None ',x
-        x+=1
-print 'no: ',x, '[',c
-plt.matshow(new_pic)
+#        x+=1
+#print 'no: ',x, '[',c
+#plt.matshow(new_pic)
 
-plt.show()
+#plt.show()
 
 #for i in pics:
 #    plt.matshow(i)
@@ -469,3 +513,19 @@ plt.show()
 #    cv2.circle(markers,(i[0],i[1]),2,(0,0,255),3)
 #plt.imshow(markers)#,cmap='gray')
 #plt.show()
+
+markers=sobely
+circles = cv2.HoughCircles(markers,cv2.HOUGH_GRADIENT,1,20,
+                            param1=50,param2=30,minRadius=0,maxRadius=0)
+circles = np.uint16(np.around(markers))
+for i in circles[0,:]:
+#    print' i',i
+    # draw the outer circle
+    cv2.circle(markers,(i[0],i[1]),i[2],(0,255,0),2)
+    # draw the center of the circle
+    cv2.circle(markers,(i[0],i[1]),2,(0,0,255),3)
+#plt.imshow(markers)#,cmap='gray')
+#plt.show()
+
+plt.matshow(markers)
+plt.show()
