@@ -2,12 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="90a4ae2c-a883-429c-a48c-5efc3463f52a" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Img2.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/NN2.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Rag2.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Imgs.py" afterPath="$PROJECT_DIR$/Imgs.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/NN.py" afterPath="$PROJECT_DIR$/NN.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/NN2.py" afterPath="$PROJECT_DIR$/NN2.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Rag2.py" afterPath="$PROJECT_DIR$/Rag2.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -20,8 +16,8 @@
     <SUITE FILE_PATH="coverage/untitled$Imgs.coverage" NAME="Imgs Coverage Results" MODIFIED="1491754515334" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/untitled$NN.coverage" NAME="NN Coverage Results" MODIFIED="1491811913401" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/untitled$Img2.coverage" NAME="Img2 Coverage Results" MODIFIED="1491758536803" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/untitled$NN2.coverage" NAME="NN2 Coverage Results" MODIFIED="1491845328940" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/untitled$Rag2.coverage" NAME="Rag2 Coverage Results" MODIFIED="1491845211248" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/untitled$NN2.coverage" NAME="NN2 Coverage Results" MODIFIED="1491851823687" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/untitled$Rag2.coverage" NAME="Rag2 Coverage Results" MODIFIED="1491858510376" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
   <component name="CreatePatchCommitExecutor">
     <option name="PATCH_PATH" value="" />
@@ -72,8 +68,8 @@
       <file leaf-file-name="Imgs.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Imgs.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="49">
-              <caret line="132" column="7" lean-forward="false" selection-start-line="132" selection-start-column="0" selection-end-line="132" selection-end-column="7" />
+            <state relative-caret-position="86">
+              <caret line="167" column="1" lean-forward="true" selection-start-line="167" selection-start-column="1" selection-end-line="167" selection-end-column="49" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -84,8 +80,8 @@
       <file leaf-file-name="Img2.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Img2.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1044">
-              <caret line="62" column="72" lean-forward="false" selection-start-line="62" selection-start-column="72" selection-end-line="62" selection-end-column="72" />
+            <state relative-caret-position="94">
+              <caret line="53" column="78" lean-forward="true" selection-start-line="53" selection-start-column="0" selection-end-line="53" selection-end-column="78" />
               <folding>
                 <element signature="e#0#49#0" expanded="true" />
               </folding>
@@ -93,11 +89,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="NN2.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="NN2.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/NN2.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="111">
-              <caret line="567" column="18" lean-forward="true" selection-start-line="567" selection-start-column="18" selection-end-line="567" selection-end-column="18" />
+            <state relative-caret-position="222">
+              <caret line="69" column="5" lean-forward="true" selection-start-line="69" selection-start-column="5" selection-end-line="69" selection-end-column="5" />
               <folding>
                 <element signature="e#0#12#0" expanded="true" />
               </folding>
@@ -115,24 +111,24 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Rag2.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/Rag2.py">
+      <file leaf-file-name="rag.py" pinned="false" current-in-tab="false">
+        <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/skimage/future/graph/rag.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="18">
-              <caret line="98" column="0" lean-forward="true" selection-start-line="98" selection-start-column="0" selection-end-line="98" selection-end-column="0" />
-              <folding>
-                <element signature="e#0#54#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="256">
+              <caret line="212" column="0" lean-forward="false" selection-start-line="212" selection-start-column="0" selection-end-line="212" selection-end-column="0" />
+              <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="rag.py" pinned="false" current-in-tab="false">
-        <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/skimage/future/graph/rag.py">
+      <file leaf-file-name="Rag2.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/Rag2.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="3708">
-              <caret line="212" column="0" lean-forward="false" selection-start-line="212" selection-start-column="0" selection-end-line="212" selection-end-column="0" />
-              <folding />
+            <state relative-caret-position="104">
+              <caret line="75" column="5" lean-forward="false" selection-start-line="75" selection-start-column="5" selection-end-line="75" selection-end-column="5" />
+              <folding>
+                <element signature="e#0#54#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -148,20 +144,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>1</find>
-      <find>6</find>
-      <find>9</find>
-      <find>== 3</find>
-      <find>softmax</find>
-      <find>soft</find>
-      <find>10</find>
-      <find>conv2</find>
-      <find>imgs[</find>
-      <find>x_train</find>
-      <find>/4</find>
-      <find>/</find>
-      <find>Y=</find>
-      <find>after</find>
       <find>==</find>
       <find>aft</find>
       <find>afte</find>
@@ -176,8 +158,22 @@
       <find>epoc</find>
       <find>opening</find>
       <find>imshow</find>
-      <find>show</find>
       <find>epochs</find>
+      <find>dense_num</find>
+      <find>2(</find>
+      <find>conv2(</find>
+      <find>dense</find>
+      <find>== 11</find>
+      <find>size[0</find>
+      <find>size =</find>
+      <find>density' in</find>
+      <find>2b</find>
+      <find>show</find>
+      <find>connecte</find>
+      <find>thresh</find>
+      <find>c ==</find>
+      <find>dilate</find>
+      <find>rois</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -198,8 +194,8 @@
         <option value="$PROJECT_DIR$/NN.py" />
         <option value="$PROJECT_DIR$/Imgs.py" />
         <option value="$USER_HOME$/anaconda2/lib/python2.7/site-packages/nolearn/lasagne/base.py" />
-        <option value="$PROJECT_DIR$/Rag2.py" />
         <option value="$PROJECT_DIR$/NN2.py" />
+        <option value="$PROJECT_DIR$/Rag2.py" />
       </list>
     </option>
   </component>
@@ -235,7 +231,7 @@
     <property name="js.eslint.eslintPackage" value="" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
-  <component name="RunManager" selected="Python.NN2">
+  <component name="RunManager" selected="Python.Rag2">
     <configuration default="false" name="NN" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -549,8 +545,8 @@
     </list>
     <recent_temporary>
       <list size="5">
-        <item index="0" class="java.lang.String" itemvalue="Python.NN2" />
-        <item index="1" class="java.lang.String" itemvalue="Python.Rag2" />
+        <item index="0" class="java.lang.String" itemvalue="Python.Rag2" />
+        <item index="1" class="java.lang.String" itemvalue="Python.NN2" />
         <item index="2" class="java.lang.String" itemvalue="Python.NN" />
         <item index="3" class="java.lang.String" itemvalue="Python.Img2" />
         <item index="4" class="java.lang.String" itemvalue="Python.Imgs" />
@@ -583,7 +579,7 @@
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32833335" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.6433333" sideWeight="0.49445677" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.45833334" sideWeight="0.49445677" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32857144" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
@@ -947,24 +943,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/skimage/future/graph/rag.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3708">
-          <caret line="212" column="0" lean-forward="false" selection-start-line="212" selection-start-column="0" selection-end-line="212" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Img2.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1044">
-          <caret line="62" column="72" lean-forward="false" selection-start-line="62" selection-start-column="72" selection-end-line="62" selection-end-column="72" />
-          <folding>
-            <element signature="e#0#49#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/NN.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="108">
@@ -1006,30 +984,48 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/Imgs.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="49">
-          <caret line="132" column="7" lean-forward="false" selection-start-line="132" selection-start-column="0" selection-end-line="132" selection-end-column="7" />
+        <state relative-caret-position="86">
+          <caret line="167" column="1" lean-forward="true" selection-start-line="167" selection-start-column="1" selection-end-line="167" selection-end-column="49" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Rag2.py">
+    <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/skimage/future/graph/rag.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="18">
-          <caret line="98" column="0" lean-forward="true" selection-start-line="98" selection-start-column="0" selection-end-line="98" selection-end-column="0" />
-          <folding>
-            <element signature="e#0#54#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="256">
+          <caret line="212" column="0" lean-forward="false" selection-start-line="212" selection-start-column="0" selection-end-line="212" selection-end-column="0" />
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/NN2.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="111">
-          <caret line="567" column="18" lean-forward="true" selection-start-line="567" selection-start-column="18" selection-end-line="567" selection-end-column="18" />
+        <state relative-caret-position="222">
+          <caret line="69" column="5" lean-forward="true" selection-start-line="69" selection-start-column="5" selection-end-line="69" selection-end-column="5" />
           <folding>
             <element signature="e#0#12#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Img2.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="94">
+          <caret line="53" column="78" lean-forward="true" selection-start-line="53" selection-start-column="0" selection-end-line="53" selection-end-column="78" />
+          <folding>
+            <element signature="e#0#49#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Rag2.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="104">
+          <caret line="75" column="5" lean-forward="false" selection-start-line="75" selection-start-column="5" selection-end-line="75" selection-end-column="5" />
+          <folding>
+            <element signature="e#0#54#0" expanded="true" />
           </folding>
         </state>
       </provider>

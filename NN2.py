@@ -88,14 +88,14 @@ def load_files():
             continue
         c += 1
         print 'f ',filename
-        #if c == 11:
+        #if c == 5:
         #    break
         print filename, c
         #if c==60:
             #break
         im = Image.open("{0}{1}".format(path, filename))  # "/home/olusiak/Obrazy/schr.png")
         if 'density' in filename:
-            print 'erozja'
+            #print 'erozja'
             im_arr = np.fromstring(im.tobytes(), dtype=np.uint8)
             im_arr = im_arr.reshape((im.size[1], im.size[0], 4))
             kernel = np.ones((3, 3), np.uint8)
@@ -120,11 +120,13 @@ def load_files():
             #im_arr=cv2.equalizeHist(im_arr)
             im = Image.fromarray(im_arr)
 
+
+
         pix = im.load()
         #plt.imshow(im)
         #plt.show()
-        for ox in range(0,size_orig[0],20):
-            for oy in range(0,size_orig[1],20):
+        for ox in range(0,size_orig[0],50):
+            for oy in range(0,size_orig[1],50):
                 for i in range(ran):
                     try:
                         test = ox + size[0] * i
@@ -577,44 +579,65 @@ def createConv3(attributes, labels, data, results):
 
             net1 = NeuralNet(
                 layers=[('input', layers.InputLayer),
+                        ('conv2d0', layers.Conv2DLayer),
+                        ('maxpool0', layers.MaxPool2DLayer),
                         ('conv2d1', layers.Conv2DLayer),
-                        ('conv2d2', layers.Conv2DLayer),
                         ('maxpool1', layers.MaxPool2DLayer),
+                        ('conv2d2', layers.Conv2DLayer),
                         ('conv2d3', layers.Conv2DLayer),
                         ('maxpool2', layers.MaxPool2DLayer),
+                        ('conv2d4', layers.Conv2DLayer),
+                        ('dense',layers.Conv2DLayer),#DenseLayer),
                         ('up', layers.Upscale2DLayer),
                         ('transp1', layers.TransposedConv2DLayer),
                         ('up2', layers.Upscale2DLayer),
-                        ('transp2', layers.TransposedConv2DLayer),
-                        ('transp3', layers.TransposedConv2DLayer),
-                        ('conv2d4', layers.Conv2DLayer),  # ,
+                        ('transp2', layers.TransposedConv2DLayer)#,
+                        #('transp3', layers.TransposedConv2DLayer),
+                        #('conv2d4', layers.Conv2DLayer),  # ,
                         ],
 
 
                 # input layer
                 input_shape=(None, 1, size[1], size[0]),
+                conv2d0_num_filters=1,
+                conv2d0_filter_size=(3, 3),
+                conv2d0_nonlinearity=lasagne.nonlinearities.rectify,
+                maxpool0_pool_size=(2, 2),
                 # layer conv2d1
-                conv2d1_num_filters=16,
+                conv2d1_num_filters=32,
                 conv2d1_filter_size=(3, 3),
                 conv2d1_nonlinearity=lasagne.nonlinearities.rectify,
-                conv2d2_num_filters=16,
+
+                maxpool1_pool_size=(2, 2),
+
+                conv2d2_num_filters=64,
                 conv2d2_filter_size=(3, 3),
                 conv2d2_nonlinearity=lasagne.nonlinearities.rectify,
                 #conv2d1_W=lasagne.init.GlorotUniform(),
                 # layer maxpool1
-                maxpool1_pool_size=(2, 2),
+
                 # layer conv2d2
-                conv2d3_num_filters=32,
+                conv2d3_num_filters=128,
                 conv2d3_filter_size=(3, 3),
                 conv2d3_nonlinearity=lasagne.nonlinearities.rectify,
                 # layer maxpool2
                 maxpool2_pool_size=(2, 2),
+                #conv4
+                conv2d4_num_filters=256,
+                conv2d4_filter_size=(5, 5),
+                conv2d4_nonlinearity=lasagne.nonlinearities.rectify,
+                #DENSE
+                dense_num_filters=256,
+                dense_filter_size=(3, 3),
+                dense_nonlinearity=lasagne.nonlinearities.rectify,
+                #dense_nonlinearity=lasagne.nonlinearities.rectify,
+                #dense_num_units=64*size[0]*size[1],
                 #up
                 up_scale_factor=2,
                 #('up', layers.Upscale2DLayer),
                 #transp1
-                transp1_num_filters=32,
-                transp1_filter_size=(3, 3),
+                transp1_num_filters=256,
+                transp1_filter_size=(5, 5),
                 transp1_nonlinearity=lasagne.nonlinearities.rectify,
                 # up2
                 up2_scale_factor=2,
@@ -623,16 +646,16 @@ def createConv3(attributes, labels, data, results):
                 #('transp2', layers.TransposedConv2DLayer),
                 #('transp3', layers.TransposedConv2DLayer),
                 # transp2
-                transp2_num_filters=16,
-                transp2_filter_size=(3, 3),
+                transp2_num_filters=1,
+                transp2_filter_size=(1, 1),
                 transp2_nonlinearity=lasagne.nonlinearities.rectify,
                 # transp3
-                transp3_num_filters=16,
-                transp3_filter_size=(3, 3),
-                transp3_nonlinearity=lasagne.nonlinearities.rectify,
-                conv2d4_num_filters=1,
-                conv2d4_filter_size=(1, 1),
-                conv2d4_nonlinearity=lasagne.nonlinearities.sigmoid,
+                #transp3_num_filters=16,
+                #transp3_filter_size=(3, 3),
+                #transp3_nonlinearity=lasagne.nonlinearities.rectify,
+                #conv2d4_num_filters=1,
+                #conv2d4_filter_size=(1, 1),
+                #conv2d4_nonlinearity=lasagne.nonlinearities.sigmoid,
                 #('conv2d4', layers.Conv2DLayer),  # ,
 
                 #output_nonlinearity=lasagne.nonlinearities.sigmoid,
@@ -647,7 +670,7 @@ def createConv3(attributes, labels, data, results):
                 # output_incoming=(None,1,)
                 # optimization method params
                 update=nesterov_momentum,
-                update_learning_rate=0.1,  # 0.01
+                update_learning_rate=0.01,  # 0.01
                 update_momentum=0.9,#0.9
                 max_epochs=30,
                 y_tensor_type=T.tensor4,
@@ -781,7 +804,9 @@ def createConv3(attributes, labels, data, results):
                 i += 1
             print preds.shape
 
-        def createConv2(attributes, labels, data, results):
+def createConv2(attributes, labels, data, results):
+    if True:
+        if True:
             conv_nonlinearity = lasagne.nonlinearities.rectify
             if True:
                 if True:
