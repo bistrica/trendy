@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+	
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.text.*?>
+	
+<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="Controller">
+	<top>
+		
+	</top>
+	<center>
+	<ScrollPane fx:id="scrollPaneFilters" prefHeight="878.0" prefWidth="260.0">
+            <content>
+            
+         
+		<VBox>
+		
+			 <ImageView fx:id="originalFrame3" />
+			<ImageView fx:id="originalFrame" />
+			<ImageView fx:id="originalFrame2" />
+		
+		   
+			<ImageView fx:id="originalFrame4" />
+			<ImageView fx:id="originalFrame5" />
+		</VBox>
+		   </content>
+          </ScrollPane>
+	</center>
+	<bottom>
+		<HBox alignment="CENTER">
+			<padding>
+				<Insets top="25" right="25" bottom="25" left="25" />
+			</padding>
+			<Button fx:id="button" alignment="center" text="Load" onAction="#load" disable="false" />
+		</HBox>
+	</bottom>
+</BorderPane>

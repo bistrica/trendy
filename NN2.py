@@ -672,7 +672,7 @@ def createConv3(attributes, labels, data, results):
                 update=nesterov_momentum,
                 update_learning_rate=0.01,  # 0.01
                 update_momentum=0.9,#0.9
-                max_epochs=30,
+                max_epochs=250,
                 y_tensor_type=T.tensor4,
                 verbose=1,  # ,
                 regression=True
@@ -896,7 +896,7 @@ def createConv2(attributes, labels, data, results):
                         update=nesterov_momentum,
                         update_learning_rate=0.1,  # 0.01
                         update_momentum=0.9,  # 0.9
-                        max_epochs=30,
+                        max_epochs=120,
                         y_tensor_type=T.tensor4,
                         verbose=1,  # ,
                         regression=True
@@ -1090,8 +1090,8 @@ image_list=image_list2
 out=out2
 imgs=imgs2
 
-per=0.5
-per2=0.7
+per=0.8
+per2=0.9
 X = [image_list[:int(per*len(image_list))],image_list[int(per*len(image_list)):int(per2*len(image_list))]]#int(len(image_list) * .25) : int(len(image_list) * .75)]
 #print 'IMGS ',len(imgs)
 imgs=imgs[int(per*len(imgs)):int(per2*len(image_list))]#[:int(per*len(image_list))]#
