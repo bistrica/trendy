@@ -67,7 +67,7 @@ output_list=list()
 out=list()
 imgs=list()
 files = [f for f in listdir(path) if isfile(join(path, f))]
-ran=8
+ran=4
 ratio=8
 size_orig = 2048/ratio,1536/ratio
 size = size_orig[0] / ran, size_orig[1] / ran
@@ -85,6 +85,8 @@ def load_files():
 
 
         if 'dens_map' in filename:
+            continue
+        if 'density' not in filename and 'Colour' not in filename or 'xml' in filename:
             continue
         c += 1
         print 'f ',filename
@@ -227,6 +229,7 @@ def load_files():
                             aImg = np.flipud(aImg)
                             imgs.append(aImg)
 
+
                         a2 = np.asarray(a2)
                         a2 = np.reshape(a2, (size[0], size[1]))
                         #if 'density' in filename:
@@ -234,6 +237,10 @@ def load_files():
                         #plt.show()
                         a2=np.rot90(a2)
                         a2=np.flipud(a2)
+                        if 'density' in filename:
+
+                            a2 = cv2.erode(a2.astype(np.float32), kernel, iterations=1)
+
                         all.append(a2)
                         all = np.asarray(all)
                         #print 'a2 ',a2.shape, ', ' ,all.shape
@@ -699,7 +706,7 @@ def createConv3(attributes, labels, data, results):
                 for p in pr:#range(pr.size):
                     for p1 in range(p.size):
                     #for p1 in range(p.size):
-                        if p[p1]<0:
+                        if p[p1]<1:
                             p[p1]=255#        pr[p][p1]=255
 
                 plt.matshow(pr)
@@ -829,7 +836,9 @@ def createConv2(attributes, labels, data, results):
                                 ('conv2d2', layers.Conv2DLayer),
                                 ('maxpool1', layers.MaxPool2DLayer),
                                 ('conv2d3', layers.Conv2DLayer),
+                                #('dense', layers.DenseLayer),
                                 ('maxpool2', layers.MaxPool2DLayer),
+
                                 ('up', layers.Upscale2DLayer),
                                 ('transp1', layers.TransposedConv2DLayer),
                                 ('up2', layers.Upscale2DLayer),
@@ -856,6 +865,10 @@ def createConv2(attributes, labels, data, results):
                         conv2d3_nonlinearity=lasagne.nonlinearities.rectify,
                         # layer maxpool2
                         maxpool2_pool_size=(2, 2),
+                        #dense
+                        #dense_num_units=3072,#size[0] * size[1] * 60,
+                        #dense_nonlinearity=lasagne.nonlinearities.rectify,
+                        #dense_output_shape=(32,8,12),
                         # up
                         up_scale_factor=2,
                         # ('up', layers.Upscale2DLayer),
@@ -897,6 +910,7 @@ def createConv2(attributes, labels, data, results):
                         update_learning_rate=0.1,  # 0.01
                         update_momentum=0.9,  # 0.9
                         max_epochs=120,
+                        objective_l2=0.1,
                         y_tensor_type=T.tensor4,
                         verbose=1,  # ,
                         regression=True
@@ -923,7 +937,7 @@ def createConv2(attributes, labels, data, results):
                         for p in pr:  # range(pr.size):
                             for p1 in range(p.size):
                                 # for p1 in range(p.size):
-                                if p[p1] < 0:
+                                if p[p1] < 1:
                                     p[p1] = 255  # pr[p][p1]=255
 
                         plt.matshow(pr)
@@ -1079,6 +1093,7 @@ shuffle(ids)
 image_list2=list()
 out2=list()
 imgs2=list()
+#out=image_list#autoenkoder!
 for i in ids:
     image_list2.append(image_list[i])
     out2.append(out[i])

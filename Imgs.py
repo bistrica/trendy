@@ -48,23 +48,23 @@ gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
 
 
 #imgM = cv2.imread('/home/olusiak/Obrazy/densities/558_13_002Markers_Counter Window -.png_density.png')
-filename='/home/olusiak/Obrazy/densities/558_13_002Markers_Counter Window -.png_density.png'
-imgM=Image.open("{0}".format(filename))
-im_arr = np.fromstring(imgM.tobytes(), dtype=np.uint8)
-im_arr = im_arr.reshape((imgM.size[1], imgM.size[0], 4))
-kernel = np.ones((3, 3), np.uint8)
-kernel2 = np.ones((9, 9), np.uint8)
-erosion = cv2.erode(im_arr, kernel, iterations=1)
-dilate = cv2.dilate(erosion, kernel2, iterations=1)
+#filename='/home/olusiak/Obrazy/densities/558_13_002Markers_Counter Window -.png_density.png'
+#imgM=Image.open("{0}".format(filename))
+#im_arr = np.fromstring(imgM.tobytes(), dtype=np.uint8)
+#im_arr = im_arr.reshape((imgM.size[1], imgM.size[0], 4))
+#kernel = np.ones((3, 3), np.uint8)
+#kernel2 = np.ones((9, 9), np.uint8)
+#erosion = cv2.erode(im_arr, kernel, iterations=1)
+#dilate = cv2.dilate(erosion, kernel2, iterations=1)
     #        plt.imshow(dilate)
     #        plt.show()
-imgM = dilate#Image.fromarray(dilate)
-grayM = cv2.cvtColor(imgM,cv2.COLOR_BGR2GRAY)#cv2.imread('/home/olusiak/water_coins.jpg',0)
+#imgM = dilate#Image.fromarray(dilate)
+#grayM = cv2.cvtColor(imgM,cv2.COLOR_BGR2GRAY)#cv2.imread('/home/olusiak/water_coins.jpg',0)
 
-equ = cv2.equalizeHist(gray)
+#equ = cv2.equalizeHist(gray)
 #gray=equ
 
-
+kernel2 = np.ones((9, 9), np.uint8)
 data=dict()
 for i in gray.ravel():
     if data.has_key(i):
@@ -95,7 +95,7 @@ id-=15
 #i=Image.open('/home/olusiak/water_coins.jpg').convert('L')
 #plt.imshow(i)
 #print i
-print '----'
+#print '----'
 #i.show()
 #gray = cv2.cvtColor(i,cv2.COLOR_BGR2GRAY)
 #thresh=gray
@@ -131,7 +131,7 @@ ret, thresh = cv2.threshold(gray,id,255,cv2.ADAPTIVE_THRESH_MEAN_C+cv2.THRESH_BI
 # noise removal
 kernel = np.ones((3,3),np.uint8)
 opening = cv2.morphologyEx(thresh,cv2.MORPH_OPEN,kernel, iterations = 5)
-print 'open'
+#print 'open'
 #plt.imshow(opening)#,cmap='gray')
 #plt.show()
 
@@ -206,17 +206,18 @@ def mean_shift():
 
 #plt.imshow(opening)#,cmap='gray')
 #plt.show()
-print 'PEI'
-piet_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+def hsv():
+    print 'PEI'
+    piet_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
-# threshold for hue channel in blue range
-blue_min = np.array([100, 50, 50], np.uint8)
-blue_max = np.array([140, 255, 255], np.uint8)
-threshold_blue_img = cv2.inRange(piet_hsv, blue_min, blue_max)
-#plt.imshow(threshold_blue_img)
-#plt.show()
-#threshold_blue_img = cv2.cvtColor(threshold_blue_img, cv2.COLOR_GRAY2RGB)
-opening2 = cv2.morphologyEx(threshold_blue_img,cv2.MORPH_OPEN,kernel, iterations = 5)
+    # threshold for hue channel in blue range
+    blue_min = np.array([100, 50, 50], np.uint8)
+    blue_max = np.array([140, 255, 255], np.uint8)
+    threshold_blue_img = cv2.inRange(piet_hsv, blue_min, blue_max)
+    #plt.imshow(threshold_blue_img)
+    #plt.show()
+    #threshold_blue_img = cv2.cvtColor(threshold_blue_img, cv2.COLOR_GRAY2RGB)
+    opening2 = cv2.morphologyEx(threshold_blue_img,cv2.MORPH_OPEN,kernel, iterations = 5)
 #plt.imshow(opening2)
 #plt.show()
 
@@ -238,10 +239,9 @@ def hsv_hist():
     plt.hist(lu,250)
     #plt.show()
 # sure background area
+
+
 sure_bg = cv2.dilate(opening,kernel,iterations=3)
-
-
-
 # Finding sure foreground area
 dist_transform = cv2.distanceTransform(opening,cv2.DIST_L2,5)#OPENING
 #plt.imshow(dist_transform)
@@ -279,6 +279,7 @@ new_pic=np.reshape(new_pic,sure_fg.shape)
 cz=0
 sett=set()
 maxes=list()
+
 for i in range(ran):
     try:
         test = ox + size[1] * i
@@ -354,7 +355,7 @@ for i in range(ran):
 
 
 
-        print len(l)
+        #print len(l)
         pics.append(l)
    #     plt.matshow(l)
    #     plt.show()
@@ -399,8 +400,8 @@ for i in range(ran):
 
         # print 'llg ',l.type
 
-plt.matshow(new_pic)
-plt.show()
+#plt.matshow(new_pic)
+#plt.show()
 
 #c=9/0
 
@@ -451,14 +452,14 @@ plt.show()
 #plt.matshow(l)
 #plt.show()
 
-print 'ret'
+#print 'ret'
 #plt.imshow(ret)
 #plt.show()
 
 #plt.imshow(sure_fg)
 #plt.show()
 
-print 'sure'
+#print 'sure'
 #sure_fg=opening2
 sure_fg = cv2.erode(sure_fg,kernel,iterations=3)#3
 
@@ -466,9 +467,9 @@ sure_fg = cv2.erode(sure_fg,kernel,iterations=3)#3
 # Finding unknown region
 sure_fg = np.uint8(sure_fg)
 unknown = cv2.subtract(sure_bg,sure_fg)
-print 's fg'
-plt.imshow(sure_fg)
-plt.show()
+#print 's fg'
+#plt.imshow(sure_fg)
+#plt.show()
 
 #dist_transform = cv2.distanceTransform(sure_fg,cv2.DIST_L2,5)#OPENING
 #plt.imshow(dist_transform)
@@ -482,7 +483,7 @@ ret, markers = cv2.connectedComponents(sure_fg)
 
 # Add one to all labels so that sure background is not 0, but 1
 markers = markers+1
-print 'mark'
+#print 'mark'
 plt.imshow(markers)
 plt.show()
 # Now, mark the region of unknown with zero
@@ -490,7 +491,10 @@ markers[unknown==255] = 0
 
 plt.imshow(img)#,cmap='gray')
 plt.show()
+print 'fx'
 fx=segmentation.random_walker(img, markers)
+plt.matshow(fx)
+plt.show()
 #markers = cv2.watershed(img,markers)
 img[markers == -1] = [255,0,0]
 print img
@@ -519,10 +523,7 @@ circles = cv2.HoughCircles(markers,cv2.HOUGH_GRADIENT,1,20,
                             param1=50,param2=30,minRadius=0,maxRadius=0)
 circles = np.uint16(np.around(markers))
 for i in circles[0,:]:
-#    print' i',i
-    # draw the outer circle
     cv2.circle(markers,(i[0],i[1]),i[2],(0,255,0),2)
-    # draw the center of the circle
     cv2.circle(markers,(i[0],i[1]),2,(0,0,255),3)
 #plt.imshow(markers)#,cmap='gray')
 #plt.show()
