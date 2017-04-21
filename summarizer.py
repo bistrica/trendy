@@ -1,5 +1,7 @@
 import numpy
 import sklearn
+
+from skimage import data, segmentation, filters, color
 import numpy
 import sklearn
 import cv2
@@ -60,6 +62,8 @@ from os import listdir
 
 
 class Summarizer(object):
+
+    min_perc=0.5
 
     def count_with_median(self,img2):
         im_arr = np.fromstring(img2.tobytes(), dtype=np.uint8)
@@ -184,3 +188,152 @@ class Summarizer(object):
         #return dilate
         im = Image.fromarray(markers)
         return im
+
+    def check_valid_cell(self,mat,color):
+        maxW=-1
+        maxH=-1
+        minH=9000
+        minW=9000
+        count=0
+        for i in range(mat.shape[0]):
+            for j in range(mat.shape[1]):
+                #print 'm',type(mat[i][j]),color
+                #matt=[mat[i][j][0],mat[i][j][1],mat[i][j][2]]
+
+                'ma', type(mat[i][j]),mat[i][j]
+                if np.array_equal(mat[i][j],color):
+                    count+=1
+                    if i<=minW:
+                        minW=i
+                    if i>=maxW:
+                        maxW=i
+                    if j<=minH:
+                        minH=j
+                    if j>=maxH:
+                        maxH=j
+        res=(maxW-minW)*(maxH-minH)
+        perc=float(count)/float(res)
+        valid=(perc>=self.min_perc)
+        print  count,res,perc,valid,maxH,minH,maxW,minW
+        return count,res,perc,valid
+
+    def check_valid_cell_all_colours(self,mat,colors):
+        maxW=-1
+        maxH=-1
+        minH=9000
+        minW=9000
+        #count=0
+        dic_col=dict()
+        for c in colors:
+            dic_col[c]=[9000,-1,9000,-1,0]
+        for i in range(mat.shape[0]):
+            for j in range(mat.shape[1]):
+                print 'i j ',i,j
+                #print 'm',type(mat[i][j]),color
+                #matt=[mat[i][j][0],mat[i][j][1],mat[i][j][2]]
+
+                'ma', type(mat[i][j]),mat[i][j]
+                key=tuple(mat[i][j].tolist())
+                if key in dic_col.keys():#np.array_equal(mat[i][j],color):
+                    dic_col[key][4]+=1
+                    if i<=dic_col[key][0]:#minW:
+                        dic_col[key][0]=i
+                    if i>=dic_col[key][1]:
+                        dic_col[key][1]=i
+                    if j<=dic_col[key][2]:
+                        dic_col[key][2]=j
+                    if j>=dic_col[key][3]:
+                        dic_col[key][3]=j
+        for k in dic_col.keys():
+            minW=dic_col[k][0]
+            maxW = dic_col[k][1]
+            minH = dic_col[k][2]
+            maxH = dic_col[k][3]
+            res=(maxW-minW)*(maxH-minH)
+            count=dic_col[k][4]
+            perc = float(count) / float(res)
+            valid = (perc >= self.min_perc)
+            dic_col[k]=(count,res,perc,valid,dic_col[k])
+
+        #print  count,res,perc,valid,maxH,minH,maxW,minW
+        return dic_col#count,res,perc,valid
+
+    def check_mat(self,img):
+        #im = Image.open(path)  # "/home/olusiak/Obrazy/schr.png")
+        im_arr = np.fromstring(img.tobytes(), dtype=np.uint8)
+        im_arr = im_arr.reshape((img.size[1], img.size[0], im_arr.size/(img.size[0]*img.size[1])))
+        fx = im_arr#img.load()
+        #fx=mat
+        xx = set()
+        print fx
+        for i in range(fx.shape[0]):#fx.shape[0]):
+            for j in range(fx.shape[1]):#fx.shape[1]):
+                # fx[i][j]=[0,i*10,j*10]
+                #print 'fx[i][j]',fx[i][j]
+                if isinstance(fx[i][j],int):
+                    s=fx[i][j]
+                else:
+                    s=(fx[i][j][0],fx[i][j][1],fx[i][j][2])
+                    #s=str(fx[i][j][0])
+                    #for ij in range(1,len(fx[i][j]),1):
+                    #    s=s+'_'+str(fx[i][j][ij])
+                xx.add(s)#str(fx[i][j][0]) + '_' + str(fx[i][j][1]) + '_' + str(fx[i][j][2]))
+        print 'size ', len(xx)
+        invalid=list()
+        dic=self.check_valid_cell_all_colours(fx,xx)
+
+        #for x in xx:
+        #    tab = list(x.split('_'))
+
+        #    for i in range(len(tab)):
+        #        tab[i] = int(tab[i])
+        #    #tab=tuple(tab)
+        #    #if len(tab)==1:
+
+        #    #    tab=tab[0]
+        #    tab=np.asarray(tab)
+        #    print 'tab ',tab
+        #    count, res, perc, valid=self.check_valid_cell(fx,tab)
+        #    print tab,': ',count,res,perc,valid
+        for k in dic.keys():
+            count, res, perc, valid, tup=dic[k]
+            print 'k: ',k,', ', count, res, perc, valid, '[',tup,']'
+            if not valid:
+                invalid.append(k)
+        change=(0,0,0)
+        if isinstance(fx[0][0],int):
+            change=0
+        for i in range(fx.shape[0]):
+            for j in range(fx.shape[1]):
+                if tuple(fx[i][j].tolist()) in invalid:
+                    fx[i][j]=change
+        fx = Image.fromarray(fx)
+        return fx
+        #        xx.add(str(fx[i][j][0])+'_'+str(fx[i][j][1])+'_'+str(fx[i][j][2]))
+        #print 'size ', len(xx)
+
+    def colorr(self,img):
+
+        tab = [11, 57, 104]#[75, 122, 191]#[200,151,117]#[202,149,113]#[121,109,194]#[75, 122, 191]
+        print 'xxxx'
+        tab=np.asarray(tab)
+        tab2 = [255, 0, 0]
+        tab2 = np.asarray(tab2)
+        im_arr = np.fromstring(img.tobytes(), dtype=np.uint8)
+        im_arr = im_arr.reshape((img.size[1], img.size[0], im_arr.size / (img.size[0] * img.size[1])))
+        fx = im_arr
+
+        for i in range(fx.shape[0]):
+            for j in range(fx.shape[1]):
+                if np.array_equal(fx[i][j],tab):
+                    fx[i][j]=tab2
+
+        plt.imshow(fx)
+        plt.show()
+        self.check_valid_cell(fx,tab2)
+        #plt.imshow(segmentation.mark_boundaries(im_arr, fx))
+        #plt.show()
+        fx = Image.fromarray(fx)
+        plt.imshow(fx)
+        plt.show()
+        return fx

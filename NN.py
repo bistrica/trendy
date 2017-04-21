@@ -37,10 +37,10 @@ output_list=list()
 out=list()
 imgs=list()
 files = [f for f in listdir(path) if isfile(join(path, f))]
-ran=8
-ratio=8
+ran=2
+ratio=4
 size_orig = 2048/ratio,1536/ratio
-size = size_orig[0] / ran, size_orig[1] / ran
+size =  100,100#size_orig[0] / ran, size_orig[1] / ran
 PIXELS=size[0]*size[1]/4
 print "> ",size[0], ' ',size[1]
 
@@ -54,7 +54,7 @@ def load_files():
 
 
 
-        if 'dens_map' in filename:
+        if 'dens_map' in filename or 'xml' in filename or 'Colour' in filename:
             continue
         c += 1
         print 'f ',filename
@@ -126,9 +126,9 @@ def load_files():
         #plt.show()
         print size_orig[0],size_orig[1]
         for ox in range(0,size_orig[0],50):#size_orig[0],10):
-            print 'OX ',ox
+            #print 'OX ',ox
             for oy in range(0,size_orig[1],50):
-                print 'OX OY ',ox,' ',oy
+                #print 'OX OY ',ox,' ',oy
                 for i in range(ran):
                     #pix2=np.copy(pix[0])
                     #pix2 = np.asarray(pix2)
@@ -168,8 +168,8 @@ def load_files():
                             if True:
 
                                 for y in range(oy+size[1] * j, oy+size[1] * (j + 1), 1):
-                                    print 'x,y',x,' ',y, ox, size[0], i, j, ran
-                                    print ox+size[0] * i, ox+size[0] * (i + 1),'/',oy+size[1] * j, oy+size[1] * (j + 1)
+                                    #print 'x,y',x,' ',y, ox, size[0], i, j, ran
+                                    #print ox+size[0] * i, ox+size[0] * (i + 1),'/',oy+size[1] * j, oy+size[1] * (j + 1)
                                     cpixel = pix[x,y]#x, y]
                                     #if 'density' in filename:
                                     #    if pix[x,y][1]==255:
@@ -329,45 +329,6 @@ def load_files():
 #np.asarray(a)
 
 load_files()
-#print 'o ',output_list[0]
-
-#for i in range(len(image_list)):
-    #print 'ii: ',i
-    #plt.matshow(image_list[i][0])
-    #plt.show()
-    #plt.matshow(out[i][0])
-    #plt.show()
-
-    #pr=output_list[i]
-    #pr=np.asarray(pr)
-    #arr = list()  # np.array(int)
-    #ind=0
-    #while ind < pr.size:
-    #    res = 0
-    #    m = max(pr[ind], pr[ind + 1], pr[ind + 2])
-    #    if pr[ind] == m:
-    #        arr.append(50)
-    #    elif pr[ind + 1] == m:
-    #        arr.append(125)
-    #    elif pr[ind + 2] == m:
-    #        arr.append(255)
-    #    else:
-    #        print 'BAD', pr[ind], pr[ind + 1], pr[ind + 2]
-    #        pr[ind] = 0
-    #    ind += 3
-    #arr = np.asarray(arr)
-    #print 'arr', arr
-    #print 'lenarr ', arr.size
-    #pr = arr
-
-    #pr = np.reshape(pr, (size[1], size[0]))
-
-   # plt.matshow(pr)
-    #plt.show()
-
-
-    #print '==='
-
 
         #print 'pix ',len(all_pixels)#im.size
 
@@ -568,6 +529,8 @@ def createConv(attributes,labels,data,results):
     #plt.ylabel('True label')
     #plt.xlabel('Predicted label')
     #plt.show()
+
+
 
 def predict(data):
     #result=clf.predict(data)
@@ -859,7 +822,244 @@ def createConv2(attributes, labels, data, results):
                 i += 1
             print preds.shape
 
-print 'COUNT ',len(output_list), ' ',len(image_list), counterr
+
+
+
+def createConv2b(attributes, labels, data, results):
+    conv_nonlinearity = lasagne.nonlinearities.rectify
+    if True:
+        if True:
+            X_train = attributes
+            print 'X_train ', len(X_train)
+            print 'len X_train ', len(X_train[0])
+            for x in X_train:
+                print 'size ', x[0].size, x[0].shape
+            #c=9/0
+            y_train = labels
+            X_test = data
+            y_test = results
+            X_train = np.asarray(X_train)
+            print 'sh ', X_train.shape[1:]
+
+            net1 = NeuralNet(
+                layers=[('input', layers.InputLayer),
+                        ('maxpool1', layers.MaxPool2DLayer),
+                        ('conv2d1', layers.Conv2DLayer),
+                        ('maxpool2', layers.MaxPool2DLayer),
+                        ('conv2d2', layers.Conv2DLayer),
+                        ('maxpool3', layers.MaxPool2DLayer),
+                        ('conv2d3', layers.Conv2DLayer),
+                        ('conv2d4', layers.Conv2DLayer),
+                        ('up', layers.Upscale2DLayer),
+                        ('transp1', layers.TransposedConv2DLayer),
+                        ('up2', layers.Upscale2DLayer),
+                        ('transp2', layers.TransposedConv2DLayer),
+                        ('up3', layers.Upscale2DLayer),
+                        ('transp3', layers.TransposedConv2DLayer),
+                        ('conv2d5', layers.Conv2DLayer),  # ,
+                        ],
+
+
+                # input layer
+                input_shape=(None, 1, size[1], size[0]),
+                # layer conv2d1
+                maxpool1_pool_size=(2, 2),
+
+                conv2d1_num_filters=32,
+                conv2d1_filter_size=(3, 3),
+                conv2d1_nonlinearity=lasagne.nonlinearities.rectify,
+                maxpool2_pool_size=(2, 2),
+                conv2d2_num_filters=64,
+                conv2d2_filter_size=(3, 3),
+                conv2d2_nonlinearity=lasagne.nonlinearities.rectify,
+                #conv2d1_W=lasagne.init.GlorotUniform(),
+                # layer maxpool1
+                maxpool3_pool_size=(2, 2),
+                # layer conv2d2
+                conv2d3_num_filters=128,
+                conv2d3_filter_size=(3, 3),
+                conv2d3_nonlinearity=lasagne.nonlinearities.rectify,
+                # layer maxpool2
+                conv2d4_num_filters=512,
+                conv2d4_filter_size=(3, 3),
+                conv2d4_nonlinearity=lasagne.nonlinearities.rectify,
+                #up
+                up_scale_factor=2,
+                #('up', layers.Upscale2DLayer),
+                #transp1
+                transp1_num_filters=128,
+                transp1_filter_size=(3, 3),
+                transp1_nonlinearity=lasagne.nonlinearities.rectify,
+                # up2
+                up2_scale_factor=2,
+                #('transp1', layers.TransposedConv2DLayer),
+                #('up2', layers.Upscale2DLayer),
+                #('transp2', layers.TransposedConv2DLayer),
+                #('transp3', layers.TransposedConv2DLayer),
+                # transp2
+                transp2_num_filters=64,
+                transp2_filter_size=(3, 3),
+                transp2_nonlinearity=lasagne.nonlinearities.rectify,
+                # transp3
+                up3_scale_factor=2,
+                transp3_num_filters=16,
+                transp3_filter_size=(3, 3),
+                transp3_nonlinearity=lasagne.nonlinearities.rectify,
+                conv2d5_num_filters=1,
+                conv2d5_filter_size=(1, 1),
+                conv2d5_nonlinearity=lasagne.nonlinearities.sigmoid,
+                #('conv2d4', layers.Conv2DLayer),  # ,
+
+                #output_nonlinearity=lasagne.nonlinearities.sigmoid,
+                # output_num_filters=1,
+                # output_stride=(2,2),
+                #        output_incoming=(None),
+                # output_filter_size=(2,2),
+                # output_output_size=(size[1],size[0]),
+                # output
+                #output_num_units=2 * size[0] * size[1],  # *3,
+                # output_output_size=(size[1],size[0]),
+                # output_incoming=(None,1,)
+                # optimization method params
+                update=nesterov_momentum,
+                update_learning_rate=0.01,  # 0.01
+                update_momentum=0.9,
+                max_epochs=5,
+                y_tensor_type=T.tensor4,
+                verbose=1,  # ,
+                regression=True
+            )
+            # Train the network
+            print 'yt ', len(y_train[0])
+
+            nn = net1.fit(X_train, y_train)
+            preds = net1.predict(X_test)
+
+            ifg = 0
+            for pr in preds:
+                plt.matshow(X_test[ifg][0])
+                plt.show()
+                plt.matshow(y_test[ifg][0])
+                plt.show()
+                ifg+=1
+                pr=pr[0]
+                print 'PRR: ', pr
+                for p in pr:#range(pr.size):
+                    for p1 in range(p.size):
+                    #for p1 in range(p.size):
+                        if p[p1]!=0:
+                            p[p1]=255#        pr[p][p1]=255
+
+                plt.matshow(pr)
+                plt.show()
+                print 'PRR2: ', pr
+
+
+
+
+
+
+
+            return
+            #c=9/0
+            for pr in preds:
+                plt.matshow(X_test[ifg][0])
+                i = ifg
+                ifg += 1
+                plt.show()
+
+                ind = 0
+                arr = list()  # np.array(int)
+
+                while ind < y_test[i].size:
+                    res = 0
+                    # print 'sigm ', (pr[ind], pr[ind + 1])  # ,pr[ind+2])
+                    m = max(y_test[i][ind], y_test[i][ind + 1])  # ,pr[ind+2])
+                    if y_test[i][ind] == m:
+                        arr.append(50)
+                    elif y_test[i][ind + 1] == m:
+                        arr.append(125)
+                    # elif pr[ind+2]==m:
+                    #    arr.append(255)
+                    else:
+                        # print 'BAD', pr[ind], pr[ind + 1], pr[ind + 2]
+                        y_test[i][ind] = 0
+                    ind += 2
+                arr = np.asarray(arr)
+                # print 'arr', arr
+                # print 'lenarr ', arr.size
+                y_test[i] = arr
+
+                y_test[i] = np.reshape(y_test[i], (size[1], size[0]))
+                # pr = np.rot90(pr)
+                # pr = np.flipud(pr)
+                plt.matshow(y_test[i])
+                plt.show()
+
+                print 'pr ', pr
+                print 'len ', pr.size
+                num = list()
+                for i in range(size[0] * size[1]):
+                    num.append(0)
+                num = np.asarray(num)  # np.array(int)
+                num.reshape(size[0], size[1])
+
+                if False:
+                    for i in range(10):
+                        ind1 = int(pr[i])
+                        ind2 = int(pr[i + 1])
+                        if ind1 < 0:
+                            ind1 = ind1 * (-1)
+                        if ind2 < 0:
+                            ind2 = ind2 * (-1)
+                        print 'ind ', ind1, ind2
+                        num[ind1, ind2] = 2
+                        ind1 = int(pr[10 + i])
+                        ind2 = int(pr[10 + i + 1])
+                        if ind1 < 0:
+                            ind1 = ind1 * (-1)
+                        if ind2 < 0:
+                            ind2 = ind2 * (-1)
+
+                        num[ind1, ind2] = 1
+                    plt.matshow(num)
+                    plt.show()
+
+                if True:
+                    ind = 0
+                    arr = list()  # np.array(int)
+                    while ind < pr.size:
+                        res = 0
+                        print 'sigm ', (pr[ind], pr[ind + 1])  # ,pr[ind+2])
+                        m = max(pr[ind], pr[ind + 1])  # ,pr[ind+2])
+                        if pr[ind] == m:
+                            arr.append(50)
+                        elif pr[ind + 1] == m:
+                            arr.append(125)
+                        # elif pr[ind+2]==m:
+                        #    arr.append(255)
+                        else:
+                            print 'BAD', pr[ind], pr[ind + 1], pr[ind + 2]
+                            pr[ind] = 0
+                        ind += 2
+                    arr = np.asarray(arr)
+                    print 'arr', arr
+                    print 'lenarr ', arr.size
+                    pr = arr
+
+                    pr = np.reshape(pr, (size[1], size[0]))
+                    # pr = np.rot90(pr)
+                    # pr = np.flipud(pr)
+                    plt.matshow(pr)
+                    plt.show()
+                # for p in pr:
+                print 'PR: ', pr
+                # plt.matshow(pr)
+                # plt.show()
+                i += 1
+            print preds.shape
+
+print 'COUNT ',len(out), ' ',len(image_list), counterr
 
 per=0.9
 ids=range(0,len(image_list))
@@ -892,7 +1092,10 @@ Y = [output_list[:int(per*len(output_list))],output_list[int(per*len(output_list
 #Y1 = range(75) #Y[:int(len(Y) * .25)]
 #Y2= range(225) #Y[int(len(Y) * .25) : int(len(Y) * .75)]#
 #print 'y ',len(Y1),'...',len(Y2), ' ',len(X[0]), ' ',len(X[1])#len(Y[0])
-result=createConv2(X[1],Y[1],X[0],Y[0])#set[0], set[1],set[4],set[5])
+
+
+
+result=createConv2b(X[1],Y[1],X[0],Y[0])#set[0], set[1],set[4],set[5])
 
 #result=createConv(set[0], set[1],set[4],set[5])
 

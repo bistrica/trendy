@@ -189,6 +189,10 @@ def process(path):
 
     #plt.imshow(im_arr)
     #plt.show()
+    plt.matshow(opening)
+    plt.show()
+    plt.imshow(im_arr)
+    plt.show()
 
 
     im = Image.fromarray(im_arr)
@@ -231,8 +235,8 @@ def process(path):
     #print 'op',opening
 
 
-    #plt.imshow(out)
-    #plt.show()
+    plt.imshow(out)
+    plt.show()
     #plt.matshow(opening)
     #plt.show()
     #plt.imshow(out)
@@ -257,7 +261,7 @@ def process(path):
     #plt.show()
     return im
 
-TYPE=QUICK#RAG#WATER
+TYPE=QUICK#RAG#QUICK#RAG#WATER
 folder='QUICK'
 summ=Summarizer()
 files = [f for f in listdir(main_path) if isfile(join(main_path, f))]
@@ -277,6 +281,10 @@ for file in files:
     if TYPE==RAG:
     #red_img=process(red_img)
         red_img = process(red_img)
+        summ.colorr(red_img)
+        red_img = summ.check_mat(red_img)
+        plt.imshow(red_img)
+        plt.show()
         blue_img = process(blue_img)
         #print 'red'
         #plt.imshow(red_img)
@@ -289,7 +297,28 @@ for file in files:
         blue_img = process_water(blue_img)
     elif TYPE==QUICK:
         red_img = process_quick(red_img)
+        #summ.colorr(red_img)
+        plt.imshow(red_img)
+        plt.show()
+
+        red_img = summ.check_mat(red_img)
+        summ.colorr(red_img)
+        plt.imshow(red_img)
+        plt.show()
+
         blue_img = process_quick(blue_img)
+
+
+    plt.imshow(blue_img)
+    plt.show()
+    blue_img=summ.check_mat(blue_img)
+    plt.imshow(blue_img)
+    plt.show()
+    plt.imshow(red_img)
+    plt.show()
+    red_img = summ.check_mat(red_img)
+    plt.imshow(red_img)
+    plt.show()
     #red_img.save('/home/olusiak/Obrazy/'+folder+'/'+file+'_red.png')
     map_red=summ.make_density_map(dens_map,True)
     tp_red = summ.count_tp(red_img, map_red)
