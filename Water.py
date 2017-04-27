@@ -55,20 +55,20 @@ def process_water(path):
     print 'key: ',id,' - ',max
     id-=15
 
-    plt.matshow(gray,cmap='gray')
-    plt.show()
+    #plt.matshow(gray,cmap='gray')
+    #plt.show()
 
 
     ret, thresh = cv2.threshold(gray,id,255,cv2.ADAPTIVE_THRESH_MEAN_C+cv2.THRESH_BINARY_INV)#+cv2.THRESH_OTSU)#cv2.ADAPTIVE_THRESH_MEAN_C+
 
-    plt.matshow(thresh,cmap='gray')
-    plt.show()
+    #plt.matshow(thresh,cmap='gray')
+    #plt.show()
 
     kernel = np.ones((3,3),np.uint8)
     opening = cv2.morphologyEx(thresh,cv2.MORPH_OPEN,kernel, iterations = 5)
 
-    plt.matshow(opening,cmap='gray')
-    plt.show()
+    #plt.matshow(opening,cmap='gray')
+    #plt.show()
 
 
     #plt.imshow(sobely,cmap = 'gray')
@@ -78,17 +78,17 @@ def process_water(path):
 
     dist_transform = cv2.distanceTransform(opening,cv2.DIST_L2,5)#OPENING
 
-    plt.matshow(dist_transform)
-    plt.show()
-    ret, sure_fg = cv2.threshold(dist_transform,0.4*dist_transform.max(),255,0)
+    #plt.matshow(dist_transform)
+    #plt.show()
+    ret, sure_fg = cv2.threshold(dist_transform,1.2*dist_transform.min(),255,0)
 
     sure_fg = cv2.erode(sure_fg,kernel,iterations=3)#3
     sure_fg = np.uint8(sure_fg)
     unknown = cv2.subtract(sure_bg,sure_fg)
 
     ret, markers = cv2.connectedComponents(sure_fg)
-    plt.matshow(markers)
-    plt.show()
+    #plt.matshow(markers)
+    #plt.show()
     # Add one to all labels so that sure background is not 0, but 1
     markers = markers+1
     #print 'mark'
@@ -108,9 +108,17 @@ def process_water(path):
     #plt.show()
     markers = cv2.watershed(img,markers)
 
-    img[markers == -1] = [255,0,0]
-    plt.imshow(markers)
-    plt.show()
+    img[markers == -1] = [0,0,0]
+    #plt.imshow(markers)
+    #plt.show()
+    for e in range(len(markers)):
+        for ej in range(len(markers[0])):
+            #print markers[e]
+            if markers[e][ej]==-1 or markers[e][ej]==1:
+                markers[e][ej]=0
+    #plt.imshow(markers)
+    #plt.show()
+    markers = np.uint8(markers)
     im = Image.fromarray(markers)
     #plt.imshow(im)
     #plt.show()
@@ -235,8 +243,68 @@ def process_quick(path):
         return im
         # print img
 
+def process_suzuki(path):
+    img = cv2.imread(
+        path)  # 10978_13_001.png-1.jpg')# densities/143_13_001.png')#558_13_002.png')#fotoscale.jpg')143_13_001.png')#
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+    kernel2 = np.ones((9, 9), np.uint8)
+    data = dict()
+    for i in gray.ravel():
+        if data.has_key(i):
+            data[i] += 1
+        else:
+            data[i] = 1
+    # if data.has_key(255):
+    max = 0
+    id = None
+    for k in data.keys():
+        # print 'k ',k
+        if data[k] >= max and k < 240 and k > 130:  # 50:#240:
+            id = k
+            max = data[k]
+    print 'key: ', id, ' - ', max
+    id -= 15
+
+    ret, thresh = cv2.threshold(gray, id, 255,
+                                cv2.ADAPTIVE_THRESH_MEAN_C + cv2.THRESH_BINARY_INV)  # +cv2.THRESH_OTSU)#cv2.ADAPTIVE_THRESH_MEAN_C+
+
+    kernel = np.ones((3, 3), np.uint8)
+    opening = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel, iterations=5)
+
+    _, contours, hierarchy = cv2.findContours(opening.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+
+    cols = list()
+    cols2 = set()
+    for r in range(1, 255, 1):
+        for r1 in range(1, 255, 1):
+            for r2 in range(1, 255, 1):
+                cols.append((r, r1, r2))
 
 
+    ind=0
+    print len(contours)
+
+    shuffle(cols)
+    for c in cols:#range(len(contours)):
+
+        #col=cols[ind]
+        print 'c ',c
+
+
+        cv2.drawContours(opening, contours, ind, c, -1)
+        ind += 1
+        if ind==len(contours):
+            break
+        #cv2.drawContours(img, contours, -1, (30, 30, 35), 3)
+
+    plt.imshow(opening)
+    plt.show()
+    #markers = np.uint8(opening)
+    im = Image.fromarray(opening)
+    plt.imshow(im)
+    plt.show()
+    return im
 
 def process_felzen(path):
     if True:
@@ -305,6 +373,7 @@ def process_felzen(path):
                 # img[fx == -1] = [255, 0, 0]
                 # plt.imshow(fx)
                 # plt.show()
+                fx = np.uint8(fx)
                 im = Image.fromarray(fx)
                 # plt.imshow(im)
                 # plt.show()

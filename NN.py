@@ -29,6 +29,7 @@ from os.path import isfile, join
 from os import listdir
 from skimage.color import rgb2gray
 import theano.tensor as T
+from NNos import train
 theano.sandbox.cuda.use("gpu0")
 print 'gpu?'
 path="/home/olusiak/Obrazy/densities/"
@@ -37,10 +38,10 @@ output_list=list()
 out=list()
 imgs=list()
 files = [f for f in listdir(path) if isfile(join(path, f))]
-ran=2
+ran=8
 ratio=4
 size_orig = 2048/ratio,1536/ratio
-size =  100,100#size_orig[0] / ran, size_orig[1] / ran
+size =  size_orig[0] / ran, size_orig[1] / ran
 PIXELS=size[0]*size[1]/4
 print "> ",size[0], ' ',size[1]
 
@@ -456,6 +457,8 @@ def createConv(attributes,labels,data,results):
         dropout2_p=0.5,
         conv2d3_num_filters=32,
         conv2d3_filter_size=(1, 1),
+        #stride=2,
+
         conv2d3_nonlinearity=lasagne.nonlinearities.rectify,
         # output
         output_nonlinearity=lasagne.nonlinearities.softmax,
@@ -685,6 +688,7 @@ def createConv2(attributes, labels, data, results):
                 # output_incoming=(None,1,)
                 # optimization method params
                 update=nesterov_momentum,
+                objective_loss_function=lasagne.objectives.squared_error(),
                 update_learning_rate=0.01,  # 0.01
                 update_momentum=0.9,
                 max_epochs=5,
@@ -849,6 +853,7 @@ def createConv2b(attributes, labels, data, results):
                         ('conv2d2', layers.Conv2DLayer),
                         ('maxpool3', layers.MaxPool2DLayer),
                         ('conv2d3', layers.Conv2DLayer),
+                        #('maxpool4', layers.MaxPool2DLayer),
                         ('conv2d4', layers.Conv2DLayer),
                         ('up', layers.Upscale2DLayer),
                         ('transp1', layers.TransposedConv2DLayer),
@@ -868,9 +873,12 @@ def createConv2b(attributes, labels, data, results):
                 conv2d1_num_filters=32,
                 conv2d1_filter_size=(3, 3),
                 conv2d1_nonlinearity=lasagne.nonlinearities.rectify,
+                #conv2d1_pad='same',
                 maxpool2_pool_size=(2, 2),
+
                 conv2d2_num_filters=64,
                 conv2d2_filter_size=(3, 3),
+                #conv2d2_pad='same',
                 conv2d2_nonlinearity=lasagne.nonlinearities.rectify,
                 #conv2d1_W=lasagne.init.GlorotUniform(),
                 # layer maxpool1
@@ -878,10 +886,14 @@ def createConv2b(attributes, labels, data, results):
                 # layer conv2d2
                 conv2d3_num_filters=128,
                 conv2d3_filter_size=(3, 3),
+                conv2d3_pad='same',
                 conv2d3_nonlinearity=lasagne.nonlinearities.rectify,
                 # layer maxpool2
+                #maxpool4_pool_size=(2, 2),
                 conv2d4_num_filters=512,
                 conv2d4_filter_size=(3, 3),
+
+                conv2d4_pad='same',
                 conv2d4_nonlinearity=lasagne.nonlinearities.rectify,
                 #up
                 up_scale_factor=2,
@@ -904,9 +916,12 @@ def createConv2b(attributes, labels, data, results):
                 up3_scale_factor=2,
                 transp3_num_filters=16,
                 transp3_filter_size=(3, 3),
+                transp3_crop='same',
                 transp3_nonlinearity=lasagne.nonlinearities.rectify,
                 conv2d5_num_filters=1,
+                #conv2d5_pad='same',
                 conv2d5_filter_size=(1, 1),
+
                 conv2d5_nonlinearity=lasagne.nonlinearities.sigmoid,
                 #('conv2d4', layers.Conv2DLayer),  # ,
 
@@ -921,16 +936,17 @@ def createConv2b(attributes, labels, data, results):
                 # output_output_size=(size[1],size[0]),
                 # output_incoming=(None,1,)
                 # optimization method params
+                objective_loss_function=lasagne.objectives.squared_error,
                 update=nesterov_momentum,
                 update_learning_rate=0.01,  # 0.01
                 update_momentum=0.9,
-                max_epochs=5,
+                max_epochs=100,
                 y_tensor_type=T.tensor4,
                 verbose=1,  # ,
                 regression=True
             )
             # Train the network
-            print 'yt ', len(y_train[0])
+            print 'yt ', len(y_train), len(y_train[0])
 
             nn = net1.fit(X_train, y_train)
             preds = net1.predict(X_test)
@@ -1061,7 +1077,7 @@ def createConv2b(attributes, labels, data, results):
 
 print 'COUNT ',len(out), ' ',len(image_list), counterr
 
-per=0.9
+per=0.6
 ids=range(0,len(image_list))
 shuffle(ids)
 image_list2=list()
@@ -1080,7 +1096,13 @@ print 'IMA ',len(image_list)
 for im in image_list:
     print '>',len(im[0])
 output_list=out
-Y = [output_list[:int(per*len(output_list))],output_list[int(per*len(output_list)):]]#int(len(image_list) * .25) : int(len(image_list) * .75)]
+
+
+X = [image_list[:int(per*len(image_list))],image_list[int(per*len(image_list)):int((per+0.2)*len(image_list))],image_list[int((per+0.2)*len(image_list)):]]
+print len(X[0]),len(X[1])
+Y = [output_list[:int(per*len(output_list))],output_list[int(per*len(output_list)):int((per+0.2)*len(output_list))],output_list[int((per+0.2)*len(output_list)):]]
+
+#Y = [output_list[:int(per*len(output_list))],output_list[int(per*len(output_list)):]]#int(len(image_list) * .25) : int(len(image_list) * .75)]
 #print '>', Y
 #print 'j ',len(Y[0][0])
 #print 'out ',output_list[0][0] #"[Y] ",len(Y[0])," . 147456"
@@ -1093,9 +1115,9 @@ Y = [output_list[:int(per*len(output_list))],output_list[int(per*len(output_list
 #Y2= range(225) #Y[int(len(Y) * .25) : int(len(Y) * .75)]#
 #print 'y ',len(Y1),'...',len(Y2), ' ',len(X[0]), ' ',len(X[1])#len(Y[0])
 
+#result=train(X_train=X[0],y_train=Y[0],X_test=X[1],y_test=Y[1],X_val=X[2],y_val=Y[2])
 
-
-result=createConv2b(X[1],Y[1],X[0],Y[0])#set[0], set[1],set[4],set[5])
+result=createConv2(X[0],Y[0],X[1],Y[1])#set[0], set[1],set[4],set[5])
 
 #result=createConv(set[0], set[1],set[4],set[5])
 

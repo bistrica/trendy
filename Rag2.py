@@ -3,76 +3,24 @@ from skimage.future import graph
 from matplotlib import pyplot as plt
 from skimage import data, io, segmentation, color
 from skimage.future import graph
-import numpy as np
+
 import cv2
-from PIL import Image
-from skimage.color import rgb2gray
-import numpy
-import sklearn
-import numpy
-import sklearn
-import cv2
-import matplotlib
 import matplotlib.pyplot as plt
-import matplotlib.cm as cm
-from random import shuffle
-from urllib import urlretrieve
-import cPickle as pickle
-import os
-import gzip
+
 import numpy as np
-import theano
-import lasagne
-from lasagne import layers
-from lasagne.layers import Conv2DLayer, TransposedConv2DLayer
-from lasagne.updates import nesterov_momentum
-from nolearn.lasagne import NeuralNet
-import theano.sandbox.cuda
 
-from nolearn.lasagne import visualize
-from sklearn.metrics import classification_report
-from sklearn.metrics import confusion_matrix
-import keras
-
-import os,sys
-from PIL import Image
-from os.path import isfile, join
-from os import listdir
-from skimage.color import rgb2gray
-import theano.tensor as T
-import cv2
-import matplotlib
-import matplotlib.pyplot as plt
-import matplotlib.cm as cm
-from urllib import urlretrieve
-import cPickle as pickle
-import os
-import gzip
-import numpy as np
-import theano
-import lasagne
-from lasagne import layers
-from lasagne.layers import Conv2DLayer, TransposedConv2DLayer
-from lasagne.updates import nesterov_momentum
-from nolearn.lasagne import NeuralNet
-import theano.sandbox.cuda
-
-from nolearn.lasagne import visualize
-from sklearn.metrics import classification_report
-from sklearn.metrics import confusion_matrix
-import keras
-
-import os,sys
 from PIL import Image
 from os.path import isfile, join
 from os import listdir
 
 from summarizer import Summarizer
-from Water import process_water
-from Water import process_quick
+from Water import process_water, process_quick, process_felzen, process_suzuki
+
 WATER=0
 RAG=1
 QUICK=2
+FELZ=3
+SUZUKI=4
 
 def weight_boundary(graph, src, dst, n):
     """
@@ -213,6 +161,7 @@ def process(path):
 
     edges = filters.sobel(color.rgb2gray(img2))
     labels = segmentation.slic(img2, compactness=30, n_segments=2000)
+    #labels=segmentation.quickshift(img2)
     g = graph.rag_boundary(labels, edges)
 
     #graph.show_rag(labels, g, img)
@@ -261,8 +210,9 @@ def process(path):
     #plt.show()
     return im
 
-TYPE=QUICK#RAG#QUICK#RAG#WATER
-folder='QUICK'
+TYPE=SUZUKI#RAG#QUICK#RAG#WATER
+folder='WATERRR'
+fileSumm = open('/home/olusiak/water_summ_propCheck.txt', 'w+')
 summ=Summarizer()
 files = [f for f in listdir(main_path) if isfile(join(main_path, f))]
 files.sort()
@@ -281,8 +231,10 @@ for file in files:
     if TYPE==RAG:
     #red_img=process(red_img)
         red_img = process(red_img)
-        summ.colorr(red_img)
+        #summ.colorr(red_img)
         red_img = summ.check_mat(red_img)
+        red_cnt2, red_cells2 = summ.count_with_median(red_img)
+        print 'red ', red_cnt2, red_cells2
         plt.imshow(red_img)
         plt.show()
         blue_img = process(blue_img)
@@ -294,45 +246,70 @@ for file in files:
         #plt.show()
     elif TYPE==WATER:
         red_img = process_water(red_img)
+        red_img = summ.check_mat(red_img)
+        red_cnt2, red_cells2 = summ.count_with_median(red_img)
+        print 'red ',red_cnt2,red_cells2
+        plt.imshow(red_img)
+        plt.show()
+
         blue_img = process_water(blue_img)
     elif TYPE==QUICK:
         red_img = process_quick(red_img)
         #summ.colorr(red_img)
-        plt.imshow(red_img)
-        plt.show()
+        #plt.imshow(red_img)
+        #plt.show()
 
         red_img = summ.check_mat(red_img)
-        summ.colorr(red_img)
+        #summ.colorr(red_img)
         plt.imshow(red_img)
         plt.show()
 
         blue_img = process_quick(blue_img)
+    elif TYPE == FELZ:
+        red_img = process_felzen(red_img)
+        red_img = summ.check_mat(red_img)
+        # summ.colorr(red_img)
+        plt.imshow(red_img)
+        blue_img = process_felzen(blue_img)
+    elif TYPE == SUZUKI:
+        red_img = process_suzuki(red_img)
+        red_img = summ.check_mat(red_img)
+        plt.imshow(red_img)
+        blue_img = process_suzuki(blue_img)
 
-
-    plt.imshow(blue_img)
-    plt.show()
-    blue_img=summ.check_mat(blue_img)
-    plt.imshow(blue_img)
-    plt.show()
-    plt.imshow(red_img)
-    plt.show()
+    #red_img.save('/home/olusiak/Obrazy/' + folder + '/' + file + '_red_before.png')
+    #blue_img.save('/home/olusiak/Obrazy/' + folder + '/' + file + '_blue_before.png')
     red_img = summ.check_mat(red_img)
-    plt.imshow(red_img)
-    plt.show()
+    map_red = summ.make_density_map(dens_map, True)
+    tp_red2 = summ.count_tp(red_img, map_red)
+    red_cnt2, red_cells2 = summ.count_with_median(red_img)
+
+
+    #red_img = summ.check_mat(red_img)
+
     #red_img.save('/home/olusiak/Obrazy/'+folder+'/'+file+'_red.png')
-    map_red=summ.make_density_map(dens_map,True)
-    tp_red = summ.count_tp(red_img, map_red)
-    red_cnt, red_cells = summ.count_with_median(red_img)
 
-
-
-    #blue_img.save('/home/olusiak/Obrazy/'+folder+'/' + file + '_blue.png')
+    #tp_red = summ.count_tp(red_img, map_red)
+    #red_cnt, red_cells = summ.count_with_median(red_img)
+    blue_img = summ.check_mat(blue_img)
     map_blue=summ.make_density_map(dens_map, False)
-    tp_blue=summ.count_tp(blue_img,map_blue)
-    blue_cnt, blue_cells= summ.count_with_median(blue_img)
+    tp_blue2=summ.count_tp(blue_img,map_blue)
+    blue_cnt2, blue_cells2= summ.count_with_median(blue_img)
 
-    x=(float(red_cells))/(float(blue_cells))
-    print file,': blue: ',blue_cnt, blue_cells, tp_blue,', red: ',red_cnt,red_cells,tp_red,' (',x,'), c: ', float(red_cnt)/float(blue_cnt)
+    #blue_img = summ.check_mat(blue_img)
+    #blue_img.save('/home/olusiak/Obrazy/' + folder + '/' + file + '_blue.png')
+
+
+    #tp_blue = summ.count_tp(blue_img, map_blue)
+    #blue_cnt, blue_cells = summ.count_with_median(blue_img)
+
+    #x=(float(red_cells))/(float(blue_cells))
+    x2 = (float(red_cells2)) / (float(blue_cells2))
+    print (file+'_before : blue: '+str(blue_cnt2)+' '+str(blue_cells2)+' '+str(tp_blue2)+', red: '+str(red_cnt2)+' '+str(red_cells2)+' '+str(tp_red2)+' ('+str(x2)+'), c: '+str(float(red_cnt2)/float(blue_cnt2)))
+
+    #fileSumm.write(file+'_before : blue: '+str(blue_cnt2)+' '+str(blue_cells2)+' '+str(tp_blue2)+', red: '+str(red_cnt2)+' '+str(red_cells2)+' '+str(tp_red2)+' ('+str(x2)+'), c: '+str(float(red_cnt2)/float(blue_cnt2))+'\n')
+    #fileSumm.close()
+    #fileSumm.write(file + ': blue: ' + str(blue_cnt) + ' ' + str(blue_cells) + ' ' + str(tp_blue) + ', red: ' + str(red_cnt) + ' ' + str(red_cells) + ' ' + str(tp_red) + ' (' + str(x) + '), c: ' + str(float(red_cnt)/float(blue_cnt)))
 
     #blue_img = Image.open(blue_img)
 

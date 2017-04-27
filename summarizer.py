@@ -1,89 +1,51 @@
-import numpy
-import sklearn
 
-from skimage import data, segmentation, filters, color
-import numpy
-import sklearn
 import cv2
-import matplotlib
 import matplotlib.pyplot as plt
-import matplotlib.cm as cm
-from random import shuffle
-from urllib import urlretrieve
-import cPickle as pickle
-import os
-import gzip
+from skimage.morphology import convex_hull_image
+
 import numpy as np
-import theano
-import lasagne
-from lasagne import layers
-from lasagne.layers import Conv2DLayer, TransposedConv2DLayer
-from lasagne.updates import nesterov_momentum
-from nolearn.lasagne import NeuralNet
-import theano.sandbox.cuda
 
-from nolearn.lasagne import visualize
-from sklearn.metrics import classification_report
-from sklearn.metrics import confusion_matrix
-import keras
-
-import os,sys
 from PIL import Image
-from os.path import isfile, join
-from os import listdir
-from skimage.color import rgb2gray
-import theano.tensor as T
-import cv2
-import matplotlib
-import matplotlib.pyplot as plt
-import matplotlib.cm as cm
-from urllib import urlretrieve
-import cPickle as pickle
-import os
-import gzip
-import numpy as np
-import theano
-import lasagne
-from lasagne import layers
-from lasagne.layers import Conv2DLayer, TransposedConv2DLayer
-from lasagne.updates import nesterov_momentum
-from nolearn.lasagne import NeuralNet
-import theano.sandbox.cuda
-
-from nolearn.lasagne import visualize
-from sklearn.metrics import classification_report
-from sklearn.metrics import confusion_matrix
-import keras
-
-import os,sys
-from PIL import Image
-from os.path import isfile, join
-from os import listdir
-
+from scipy.spatial import ConvexHull
 
 class Summarizer(object):
 
     min_perc=0.5
 
     def count_with_median(self,img2):
-        im_arr = np.fromstring(img2.tobytes(), dtype=np.uint8)
+        #plt.imshow(img2)
+        #plt.show()
+        #im_arr = np.fromstring(img2.tobytes(), dtype=np.uint32)
         #print 'imm ',img2.size, im_arr.size
-        im_arr = np.reshape(im_arr,(img2.size[0], img2.size[1],im_arr.size/(img2.size[0]*img2.size[1])))#img2.size[2]))
-        img2=im_arr
-       # pix_pic = img2.load()
+        #im_arr = np.reshape(im_arr,(img2.size[1], img2.size[0],im_arr.size/(img2.size[0]*img2.size[1])))#img2.size[2]))
+        #img2=im_arr
+        pix_pic = img2.load()
+        img=pix_pic
         dic = dict()
         nonblack = 0
-        for i in range(img2.shape[0]):
-            for j in range(img2.shape[1]):
-                # print '>',img2[i][j]
-                if not (img2[i][j][0] == 0 and img2[i][j][1] == 0 and img2[i][j][2] == 0):  # ,0,0]:
+        #plt.imshow(im_arr)
+        #plt.show()
+        for i in range(img2.size[0]):
+            for j in range(img2.size[1]):
+                print '>',img[i,j]
+                if isinstance(img[i,j],int):
+                    if not (img[i, j] == 0):
+                        nonblack += 1
+                        key = img[i, j]  # (img[i,j][0],img[i,j][1],img[i,j][2] )#str(img[i,j][0]) + "_" + str(+img[i,j][1]) + "_" + str(img[i,j][2])
+                        if key not in dic.keys():
+                            dic[key] = 1
+                        else:
+                            dic[key] += 1
+                else:
+                #c=9/0 img[i,j]==-1 and not img[i,j]==1:#
+                    if not (img[i,j][0] == 0 and img[i,j][1] == 0 and img[i,j][2] == 0) and not (img[i, j][0] == 255 and img[i,j][1] == 255 and img[i,j][2] == 255):  # ,0,0]:
 
-                    nonblack += 1
-                    key = str(img2[i][j][0]) + "_" + str(+img2[i][j][1]) + "_" + str(img2[i][j][2])
-                    if key not in dic.keys():
-                        dic[key] = 1
-                    else:
-                        dic[key] += 1
+                        nonblack += 1
+                        key = img[i,j]#(img[i,j][0],img[i,j][1],img[i,j][2] )#str(img[i,j][0]) + "_" + str(+img[i,j][1]) + "_" + str(img[i,j][2])
+                        if key not in dic.keys():
+                            dic[key] = 1
+                        else:
+                            dic[key] += 1
                         #                sets.add(str(out[i][j][0])+"_"+str(+out[i][j][1])+"_"+str(out[i][j][2]))
                     #print out[i][j]
         ids=[]
@@ -98,11 +60,13 @@ class Summarizer(object):
             plt.imshow(img2)
             plt.show()
         keys.sort()
+        print 'keys ',keys
+        print len(keys),' non ',nonblack,' img2.shape ',img2.size[0]*img2.size[1]
         median = float(keys[len(keys) / 2])
         if len(keys) % 2 == 0:
             median += float(keys[len(keys) / 2 + 1])
             median /= 2
-        #print median
+        print 'medi ',median
         cells = float(nonblack) / median
         return (len(keys),cells)
 
@@ -112,11 +76,16 @@ class Summarizer(object):
         #plt.show()
         if dens.size!=img.size:
             dens.thumbnail(img.size, Image.ANTIALIAS)
-            #plt.imshow(dens)
-            #plt.show()
+        #plt.imshow(dens)
+        #plt.show()
         pix_pic = img.load()
         pix_dens = dens.load()
         colours=set()
+        ccc=set()
+        for i in range(img.size[0]):
+            for j in range(img.size[1]):
+                ccc.add(pix_dens[i,j])
+        print 'ccc ',len(ccc)
         #print 'CP ',pix_pic[0,0], pix_dens[0,0]
         for i in range(img.size[0]):
             for j in range(img.size[1]):
@@ -195,13 +164,14 @@ class Summarizer(object):
         minH=9000
         minW=9000
         count=0
+        pic=mat.load()
         for i in range(mat.shape[0]):
             for j in range(mat.shape[1]):
                 #print 'm',type(mat[i][j]),color
                 #matt=[mat[i][j][0],mat[i][j][1],mat[i][j][2]]
 
-                'ma', type(mat[i][j]),mat[i][j]
-                if np.array_equal(mat[i][j],color):
+                'ma', type(pic[i,j]),pic[i,j]
+                if np.array_equal(pic[i,j],color):
                     count+=1
                     if i<=minW:
                         minW=i
@@ -217,23 +187,120 @@ class Summarizer(object):
         print  count,res,perc,valid,maxH,minH,maxW,minW
         return count,res,perc,valid
 
+    def PolyArea2D(self,pts):
+        lines = np.hstack([pts, np.roll(pts, -1, axis=0)])
+        area = 0.5 * abs(sum(x1 * y2 - x2 * y1 for x1, y1, x2, y2 in lines))
+        return area
+
+    def check_valid_cell_all_colours_convex(self,mat,colors):
+        maxW=-1
+        maxH=-1
+        minH=9000
+        minW=9000
+        #count=0
+        pic=mat.load()
+        dic_col=dict()
+        for c in colors:
+            if c==0 or c==(0,0,0):
+                continue
+            dic_col[c]=[9000,-1,9000,-1,0,list()]
+        for i in range(mat.size[0]):
+            for j in range(mat.size[1]):
+                #print 'i j ',i,j
+                #print 'm',type(mat[i][j]),color
+                #matt=[mat[i][j][0],mat[i][j][1],mat[i][j][2]]
+
+                #'ma', type(mat[i][j]),mat[i][j]
+                if isinstance(pic[i,j],int):
+                    key=pic[i,j]
+                else:
+                    key=tuple(pic[i,j])#.tolist())
+                if key in dic_col.keys():#np.array_equal(mat[i][j],color):
+                    dic_col[key][4]+=1
+                    dic_col[key][5].append((i,j))
+                    if i<=dic_col[key][0]:#minW:
+                        dic_col[key][0]=i
+                    if i>=dic_col[key][1]:
+                        dic_col[key][1]=i
+                    if j<=dic_col[key][2]:
+                        dic_col[key][2]=j
+                    if j>=dic_col[key][3]:
+                        dic_col[key][3]=j
+        for k in dic_col.keys():
+            print 'colo ',k
+            minW=dic_col[k][0]
+            maxW = dic_col[k][1]
+            minH = dic_col[k][2]
+            maxH = dic_col[k][3]
+            imm=np.zeros(((maxW-minW+1,maxH-minH+1)))
+            for p in dic_col[k][5]:
+                imm[p[0]-minW][p[1]-minH]=255
+
+
+            convex_count=0
+            chull = convex_hull_image(imm)
+
+            #print 'chu ',type(chull)
+            for i in range(chull.shape[0]):
+                for j in range(chull.shape[1]):
+                    #print 'ch: ',chull[i][j]
+                    if chull[i][j] == True:
+                        convex_count+=1
+
+            #plt.imshow(imm)
+            #plt.show()
+            #plt.imshow(chull)
+            #plt.show()
+            dic_col[k][5]=np.asarray(dic_col[k][5])
+            #print 'dicc ',dic_col[k][5]
+            hull = ConvexHull(dic_col[k][5])
+            #area = hull.area
+            #area = cv2.contourArea(hull)
+            print 'area',convex_count,dic_col[k][4]
+            if convex_count>20000:
+                plt.plot(dic_col[k][5][:, 0], dic_col[k][5][:, 1], 'o')
+                plt.show()
+                plt.fill(dic_col[k][5], dic_col[k][5], 'k', alpha=0.3)
+                plt.show()
+
+            #plt.fill(dic_col[k][5][hull.vertices, 0], dic_col[k][5][hull.vertices, 1], 'k', alpha=0.3)
+            #plt.show()
+            #res=(maxW-minW)*(maxH-minH)
+
+            count=dic_col[k][4]
+            perc = float(count) / float(convex_count)
+            valid = (perc >= self.min_perc)
+            dic_col[k]=(count,convex_count,perc,valid,(minW,maxW,minH,maxH))#dic_col[k])
+
+        #print  count,res,perc,valid,maxH,minH,maxW,minW
+        #print 'dic ',dic_col
+        #c=9/0
+        return dic_col#count,res,perc,valid
+
+
     def check_valid_cell_all_colours(self,mat,colors):
         maxW=-1
         maxH=-1
         minH=9000
         minW=9000
         #count=0
+        pic=mat.load()
         dic_col=dict()
         for c in colors:
+            if c==0 or c==(0,0,0):
+                continue
             dic_col[c]=[9000,-1,9000,-1,0]
-        for i in range(mat.shape[0]):
-            for j in range(mat.shape[1]):
-                print 'i j ',i,j
+        for i in range(mat.size[0]):
+            for j in range(mat.size[1]):
+                #print 'i j ',i,j
                 #print 'm',type(mat[i][j]),color
                 #matt=[mat[i][j][0],mat[i][j][1],mat[i][j][2]]
 
-                'ma', type(mat[i][j]),mat[i][j]
-                key=tuple(mat[i][j].tolist())
+                #'ma', type(mat[i][j]),mat[i][j]
+                if isinstance(pic[i,j],int):
+                    key=pic[i,j]
+                else:
+                    key=tuple(pic[i,j])#.tolist())
                 if key in dic_col.keys():#np.array_equal(mat[i][j],color):
                     dic_col[key][4]+=1
                     if i<=dic_col[key][0]:#minW:
@@ -256,31 +323,46 @@ class Summarizer(object):
             dic_col[k]=(count,res,perc,valid,dic_col[k])
 
         #print  count,res,perc,valid,maxH,minH,maxW,minW
+        print 'dic ',dic_col
+        #c=9/0
         return dic_col#count,res,perc,valid
 
     def check_mat(self,img):
         #im = Image.open(path)  # "/home/olusiak/Obrazy/schr.png")
-        im_arr = np.fromstring(img.tobytes(), dtype=np.uint8)
-        im_arr = im_arr.reshape((img.size[1], img.size[0], im_arr.size/(img.size[0]*img.size[1])))
-        fx = im_arr#img.load()
+
+        #print im_arr[0]
+        #plt.imshow(im_arr)
+        #plt.show()
+        fx = img.load()#im_arr#img.load()
+        if isinstance(fx[0,0],int):
+            print 'zeros'
+            #c=9/0
+            im_arr = np.zeros((img.size[1], img.size[0]))
+            for i in range(img.size[0]):
+                for j in range(img.size[1]):
+                    im_arr[j][i]=fx[i,j]
+        else:
+            im_arr = np.fromstring(img.tobytes(), dtype=np.uint8)
+            im_arr = im_arr.reshape((img.size[1], img.size[0], im_arr.size / (img.size[0] * img.size[1])))
         #fx=mat
         xx = set()
         print fx
-        for i in range(fx.shape[0]):#fx.shape[0]):
-            for j in range(fx.shape[1]):#fx.shape[1]):
-                # fx[i][j]=[0,i*10,j*10]
-                #print 'fx[i][j]',fx[i][j]
-                if isinstance(fx[i][j],int):
-                    s=fx[i][j]
+        for i in range(img.size[0]):#fx.shape[0]):
+            for j in range(img.size[1]):#fx.shape[1]):
+                #print 'fff ',fx[i,j]
+                #print 'imm ',im_arr[i][j]
+
+                if isinstance(fx[i,j],int):
+                    s=fx[i,j]
                 else:
-                    s=(fx[i][j][0],fx[i][j][1],fx[i][j][2])
-                    #s=str(fx[i][j][0])
-                    #for ij in range(1,len(fx[i][j]),1):
-                    #    s=s+'_'+str(fx[i][j][ij])
+                    s=(fx[i,j][0],fx[i,j][1],fx[i,j][2])
+                #s=tuple(im_arr[i][j])
+                #print 's ',s
                 xx.add(s)#str(fx[i][j][0]) + '_' + str(fx[i][j][1]) + '_' + str(fx[i][j][2]))
         print 'size ', len(xx)
         invalid=list()
-        dic=self.check_valid_cell_all_colours(fx,xx)
+        dic=self.check_valid_cell_all_colours_convex(img,xx)
+#        c=8/0
 
         #for x in xx:
         #    tab = list(x.split('_'))
@@ -296,18 +378,36 @@ class Summarizer(object):
         #    count, res, perc, valid=self.check_valid_cell(fx,tab)
         #    print tab,': ',count,res,perc,valid
         for k in dic.keys():
-            count, res, perc, valid, tup=dic[k]
+            (count, res, perc, valid, tup)=dic[k]
             print 'k: ',k,', ', count, res, perc, valid, '[',tup,']'
             if not valid:
                 invalid.append(k)
         change=(0,0,0)
-        if isinstance(fx[0][0],int):
+        if isinstance(fx[0,0],int):
             change=0
-        for i in range(fx.shape[0]):
-            for j in range(fx.shape[1]):
-                if tuple(fx[i][j].tolist()) in invalid:
-                    fx[i][j]=change
-        fx = Image.fromarray(fx)
+        print 'inv ', invalid
+        if len(invalid)!=0:
+            for i in range(img.size[0]):
+                for j in range(img.size[1]):
+                    #print 'i,j',i,j,fx[i,j]
+                    if isinstance(fx[i,j],int):
+                        if fx[i,j] in invalid:# or tuple(fx[i,j]) in invalid:#.tolist()) in invalid:
+                            im_arr[j][i]=change
+                        #else:
+                        #    im_arr[j][i] = fx[i,j]
+                    else:
+                        if tuple(fx[i,j]) in invalid:
+                            im_arr[j][i] = change
+                        #else:
+                        #    im_arr[j][i] = tuple(fx[i,j])
+                #else:
+                #    im_arr[i][j]
+        print '>',im_arr
+        im_arr = np.uint8(im_arr)
+        print 'imm ',im_arr
+        fx = Image.fromarray(im_arr)
+        #plt.imshow(fx)
+        #plt.show()
         return fx
         #        xx.add(str(fx[i][j][0])+'_'+str(fx[i][j][1])+'_'+str(fx[i][j][2]))
         #print 'size ', len(xx)
