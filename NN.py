@@ -38,10 +38,10 @@ output_list=list()
 out=list()
 imgs=list()
 files = [f for f in listdir(path) if isfile(join(path, f))]
-ran=8
+ran=16
 ratio=4
 size_orig = 2048/ratio,1536/ratio
-size =  size_orig[0] / ran, size_orig[1] / ran
+size = 30,30# size_orig[0] / ran, size_orig[1] / ran
 PIXELS=size[0]*size[1]/4
 print "> ",size[0], ' ',size[1]
 
@@ -53,9 +53,10 @@ def load_files():
 
     for filename in files:
 
+        if 'xml' in filename:
+            continue
 
-
-        if 'dens_map' in filename or 'xml' in filename or 'Colour' in filename:
+        if 'density' not in filename and 'Colour' not in filename:#'#'dens_map' in filename or 'xml' in filename or 'Colour' in filename:
             continue
         c += 1
         print 'f ',filename
@@ -78,8 +79,8 @@ def load_files():
             kernel2[2][2] = 0
             erosion = cv2.erode(im_arr, kernel, iterations=1)
             dilate = cv2.dilate(erosion, kernel2, iterations=1)
-    #        plt.imshow(dilate)
-    #        plt.show()
+            #plt.imshow(dilate)
+            #plt.show()
             im = Image.fromarray(dilate)
             #plt.imshow(im)
             #plt.show()
@@ -181,11 +182,11 @@ def load_files():
                                     #        print 'px',pix[x,y],', ',cpixel
                                     if 'density' in filename:
                                     #if len(cpixel)>3:
-                                        xx=1
+                                        xx=0
                                         if cpixel[1]==255 and cpixel[2]==255:
-                                            xx=0#25#cpixel[0]=125
+                                            xx=1#25#cpixel[0]=125
                                         elif cpixel[2]==255:
-                                            xx=0#55#cpixel[1]
+                                            xx=1#55#cpixel[1]
                                         #if cpixel[1]==255:
                                         #    xx=255#cpixel[0]=255
                                         cpixel=xx#(xx,xx,xx)#cpixel[0],xx,cpixel[2])
@@ -307,7 +308,74 @@ def load_files():
                             #out_pixels=np.reshape(out_pixels,(1,1,out_pixels.size))
                             #plt.matshow(a2)
                             #plt.show()
+
                             a2=np.reshape(a2,(1,size[1],size[0]))
+
+                            if True:
+                                a = a2[0]
+                                for row_id in range(len(a2[0])):
+                                    for col_id in range(len(a2[0][0])):
+    #                                    print 'a2[row_id][col_id] ',a2[row_id][col_id]
+
+                                        if a[row_id][col_id]==1:
+
+
+                                            try:
+                                                a[row_id-1][col_id]=-1
+                                            except:
+
+                                                f=1
+                                            try:
+                                                a[row_id+1][col_id] = -1
+                                            except:
+
+                                                f = 1
+                                            try:
+                                                a[row_id-1][col_id-1] = -1
+
+                                            except:
+
+                                                f = 1
+                                            try:
+                                                a[row_id-1][col_id+1] = -1
+                                            except:
+
+                                                f = 1
+                                            try:
+                                                a[row_id+1][col_id-1] = -1
+
+                                            except:
+
+                                                f = 1
+                                            try:
+                                                a[row_id+1][col_id+1] = -1
+
+                                            except:
+
+                                                f = 1
+                                            try:
+                                                a[row_id][col_id+1] = -1
+
+                                            except:
+
+                                                f = 1
+                                            try:
+                                                a[row_id][col_id-1] = -1
+
+                                            except:
+                                                #print 'y'
+                                                f = 1
+                                            #print 'a2-1[0] ',a2[0]
+                                a = a2[0]
+                                for row_id in range(len(a2[0])):
+                                    for col_id in range(len(a2[0][0])):
+                                        #                                    print 'a2[row_id][col_id] ',a2[row_id][col_id]
+
+                                        if a[row_id][col_id] == -1:
+                                            a[row_id][col_id] = 1
+
+                            #print 'a2',a2[0]
+                            #print '===================='
                             out.append(a2)#out_pixels)#a2)
                             # output_list.append(all_pixels2)
                             # output_list.append(all_pixels3)
@@ -403,12 +471,32 @@ def createNeural(attributes, labels,data):
     #return result
     #print '>', clf.predict([[2., 2.], [-1., -2.]])
 
+def multilabel_objective(predictions, targets):
+    s=0
+    for i in range(len(predictions)):
+        p=predictions[i]
+        t=targets[i]
+        print 'pred ',p
+        for z in range(len(p)):
+            if p[z]!=t[z]:
+                s+=1
+
+    return s
+
+
+
+    #epsilon = np.float32(1.0e-6)
+    #one = np.float32(1.0)
+    #pred = T.clip(predictions, epsilon, one - epsilon)
+    #return -T.sum(targets * T.log(pred) + (one - targets) * T.log(one - pred), axis=1)
+
+
 def createConv(attributes,labels,data,results):
     X_train=attributes
     print 'X_train ',len(X_train)
     print 'len X_train ', len(X_train[0])
-    for x in X_train:
-        print 'size ', x[0].size, x[0].shape
+    #for x in X_train:
+    #    print 'size ', x[0].size, x[0].shape
 
     y_train=labels
     X_test=data
@@ -575,30 +663,48 @@ counterr=0
 
 rem=list()
 ind=0
-for lista in output_list:
 
-    x=True
-    #for elem in lista:
-    i=0
-    while i<len(lista):
-        if not (lista[i]==1 and lista[i+1]==0 and lista[i+2]==0):
-            x=False
+for index in range(len(out)):
+    ok=False
+    tab=out[index]
+    for e in tab[0]:
+        for f in range(len(e)):
+
+            if e[f]!=0:
+                ok=True
+                break
+        if ok:
             break
-        i+=3
-        rem.append(ind)#lista)
-    if not x:
-        counterr+=1
-    ind+=1
-counterr=counterr*3/4
+    if not ok:
+        rem.append(index)
+
+    #print '---'
+#for lista in output_list:
+
+#    x=True
+
+#    i=0
+#    while i<len(lista):
+#        if not (lista[i]==1 and lista[i+1]==0 and lista[i+2]==0):
+#            x=False
+#            break
+#        i+=3
+#        rem.append(ind)#lista)
+#    if not x:
+#        counterr+=1
+#    ind+=1
+#counterr=counterr#*3/4
+
+print 'out len ',len(out), len(image_list)
 
 
 
-
-
+counterr=len(rem)
 for i in reversed(range(counterr)):
     out.pop(rem[i])
     #output_list.pop(rem[i])
     image_list.pop(rem[i])
+print 'out len2 ',len(out)
 
 def createConv2(attributes, labels, data, results):
     conv_nonlinearity = lasagne.nonlinearities.rectify
@@ -607,8 +713,8 @@ def createConv2(attributes, labels, data, results):
             X_train = attributes
             print 'X_train ', len(X_train)
             print 'len X_train ', len(X_train[0])
-            for x in X_train:
-                print 'size ', x[0].size, x[0].shape
+            #for x in X_train:
+            #    print 'size ', x[0].size, x[0].shape
             #c=9/0
             y_train = labels
             X_test = data
@@ -623,6 +729,9 @@ def createConv2(attributes, labels, data, results):
                         ('maxpool1', layers.MaxPool2DLayer),
                         ('conv2d3', layers.Conv2DLayer),
                         ('maxpool2', layers.MaxPool2DLayer),
+                        #('flat',layers.ReshapeLayer), #added
+                        ('dense',layers.DenseLayer),#added
+                        ('resh',layers.ReshapeLayer),#added
                         ('up', layers.Upscale2DLayer),
                         ('transp1', layers.TransposedConv2DLayer),
                         ('up2', layers.Upscale2DLayer),
@@ -650,19 +759,25 @@ def createConv2(attributes, labels, data, results):
                 conv2d3_nonlinearity=lasagne.nonlinearities.rectify,
                 # layer maxpool2
                 maxpool2_pool_size=(2, 2),
+                #flat
+                #flat_outdim=1,
+                #flat_shape=(1,32*4*6),
+                #dense
+                dense_num_units=32*4*6,#('dense',layers.DenseLayer),
+                dense_nonlinearity=lasagne.nonlinearities.rectify,
+                #resh
+                resh_shape=(-1,32,4,6),
+
                 #up
                 up_scale_factor=2,
-                #('up', layers.Upscale2DLayer),
+
                 #transp1
                 transp1_num_filters=32,
                 transp1_filter_size=(3, 3),
-                transp1_nonlinearity=lasagne.nonlinearities.rectify,
+                transp1_nonlinearity=lasagne.nonlinearities.sigmoid,
                 # up2
                 up2_scale_factor=2,
-                #('transp1', layers.TransposedConv2DLayer),
-                #('up2', layers.Upscale2DLayer),
-                #('transp2', layers.TransposedConv2DLayer),
-                #('transp3', layers.TransposedConv2DLayer),
+
                 # transp2
                 transp2_num_filters=16,
                 transp2_filter_size=(3, 3),
@@ -674,24 +789,15 @@ def createConv2(attributes, labels, data, results):
                 conv2d4_num_filters=1,
                 conv2d4_filter_size=(1, 1),
                 conv2d4_nonlinearity=lasagne.nonlinearities.sigmoid,
-                #('conv2d4', layers.Conv2DLayer),  # ,
 
-                #output_nonlinearity=lasagne.nonlinearities.sigmoid,
-                # output_num_filters=1,
-                # output_stride=(2,2),
-                #        output_incoming=(None),
-                # output_filter_size=(2,2),
-                # output_output_size=(size[1],size[0]),
-                # output
-                #output_num_units=2 * size[0] * size[1],  # *3,
-                # output_output_size=(size[1],size[0]),
-                # output_incoming=(None,1,)
-                # optimization method params
+
                 update=nesterov_momentum,
-                objective_loss_function=lasagne.objectives.squared_error(),
+                objective_loss_function=lasagne.objectives.squared_error,#multilabel_objective,
+                custom_score=("validation score", lambda x, y: np.mean(np.abs(x - y))),
+                #objective_loss_function=lasagne.objectives.squared_error(),
                 update_learning_rate=0.01,  # 0.01
                 update_momentum=0.9,
-                max_epochs=5,
+                max_epochs=100,
                 y_tensor_type=T.tensor4,
                 verbose=1,  # ,
                 regression=True
@@ -707,6 +813,8 @@ def createConv2(attributes, labels, data, results):
                 plt.matshow(X_test[ifg][0])
                 plt.show()
                 plt.matshow(y_test[ifg][0])
+                for c in y_test[ifg][0]:
+                    print 'ef ',c
                 plt.show()
                 ifg+=1
                 pr=pr[0]
@@ -714,7 +822,8 @@ def createConv2(attributes, labels, data, results):
                 for p in pr:#range(pr.size):
                     for p1 in range(p.size):
                     #for p1 in range(p.size):
-                        if p[p1]!=0:
+                        #print 'p[p1] ',p[p1]
+                        if p[p1]<0.5:
                             p[p1]=255#        pr[p][p1]=255
 
                 plt.matshow(pr)
@@ -836,8 +945,8 @@ def createConv2b(attributes, labels, data, results):
             X_train = attributes
             print 'X_train ', len(X_train)
             print 'len X_train ', len(X_train[0])
-            for x in X_train:
-                print 'size ', x[0].size, x[0].shape
+            #for x in X_train:
+            #    print 'size ', x[0].size, x[0].shape
             #c=9/0
             y_train = labels
             X_test = data
@@ -855,6 +964,9 @@ def createConv2b(attributes, labels, data, results):
                         ('conv2d3', layers.Conv2DLayer),
                         #('maxpool4', layers.MaxPool2DLayer),
                         ('conv2d4', layers.Conv2DLayer),
+                        ('dense', layers.DenseLayer),#dense_num_units = 32 * 4 * 6,  #
+                                          #dense_nonlinearity = lasagne.nonlinearities.rectify,
+                        ('reshape',layers.ReshapeLayer),
                         ('up', layers.Upscale2DLayer),
                         ('transp1', layers.TransposedConv2DLayer),
                         ('up2', layers.Upscale2DLayer),
@@ -895,7 +1007,12 @@ def createConv2b(attributes, labels, data, results):
 
                 conv2d4_pad='same',
                 conv2d4_nonlinearity=lasagne.nonlinearities.rectify,
-                #up
+
+                dense_num_units=512 * 2 * 2,  # ('dense',layers.DenseLayer),
+                dense_nonlinearity=lasagne.nonlinearities.rectify,
+                # resh
+                reshape_shape=(-1,512,2,2),
+                # up
                 up_scale_factor=2,
                 #('up', layers.Upscale2DLayer),
                 #transp1
@@ -916,7 +1033,7 @@ def createConv2b(attributes, labels, data, results):
                 up3_scale_factor=2,
                 transp3_num_filters=16,
                 transp3_filter_size=(3, 3),
-                transp3_crop='same',
+                #transp3_crop='same',
                 transp3_nonlinearity=lasagne.nonlinearities.rectify,
                 conv2d5_num_filters=1,
                 #conv2d5_pad='same',
@@ -937,12 +1054,15 @@ def createConv2b(attributes, labels, data, results):
                 # output_incoming=(None,1,)
                 # optimization method params
                 objective_loss_function=lasagne.objectives.squared_error,
+                custom_score=("validation score", lambda x, y: np.mean(np.abs(x - y))),
                 update=nesterov_momentum,
-                update_learning_rate=0.01,  # 0.01
+                update_learning_rate=0.05,  # 0.01
                 update_momentum=0.9,
-                max_epochs=100,
+
+                max_epochs=75,
                 y_tensor_type=T.tensor4,
                 verbose=1,  # ,
+                #exception_verbosity=high,
                 regression=True
             )
             # Train the network
@@ -959,13 +1079,18 @@ def createConv2b(attributes, labels, data, results):
                 plt.show()
                 ifg+=1
                 pr=pr[0]
+                m=0
                 print 'PRR: ', pr
                 for p in pr:#range(pr.size):
+                    print '=='
                     for p1 in range(p.size):
                     #for p1 in range(p.size):
-                        if p[p1]!=0:
+                        print 'p[ ',p[p1]
+                        if p[p1]>m:
+                            m=p[p1]
+                        if p[p1]<0.15:
                             p[p1]=255#        pr[p][p1]=255
-
+                print 'm ',m
                 plt.matshow(pr)
                 plt.show()
                 print 'PRR2: ', pr
@@ -1077,8 +1202,8 @@ def createConv2b(attributes, labels, data, results):
 
 print 'COUNT ',len(out), ' ',len(image_list), counterr
 
-per=0.6
-ids=range(0,len(image_list))
+per=0.9
+ids=range(0,len(image_list)/10)
 shuffle(ids)
 image_list2=list()
 out2=list()
@@ -1093,14 +1218,20 @@ imgs=imgs2
 X = [image_list[:int(per*len(image_list))],image_list[int(per*len(image_list)):]]#int(len(image_list) * .25) : int(len(image_list) * .75)]
 Xt = [imgs[:int(per*len(imgs))],imgs[int(per*len(imgs)):]]
 print 'IMA ',len(image_list)
-for im in image_list:
-    print '>',len(im[0])
+
 output_list=out
 
+X = [image_list[:int(per*len(image_list))],image_list[int((per)*len(image_list)):]]
 
-X = [image_list[:int(per*len(image_list))],image_list[int(per*len(image_list)):int((per+0.2)*len(image_list))],image_list[int((per+0.2)*len(image_list)):]]
+#X = [image_list[:int(per*len(image_list))],image_list[int(per*len(image_list)):int((per+0.2)*len(image_list))],image_list[int((per+0.2)*len(image_list)):]]
+#for im in image_list:
+#    print '>',len(im[0])
+#for im in output_list:
+#    print '>o ',len(im[0])
 print len(X[0]),len(X[1])
-Y = [output_list[:int(per*len(output_list))],output_list[int(per*len(output_list)):int((per+0.2)*len(output_list))],output_list[int((per+0.2)*len(output_list)):]]
+Y = [output_list[:int(per*len(output_list))],output_list[int((per)*len(output_list)):]]
+
+#Y = [output_list[:int(per*len(output_list))],output_list[int(per*len(output_list)):int((per+0.2)*len(output_list))],output_list[int((per+0.2)*len(output_list)):]]
 
 #Y = [output_list[:int(per*len(output_list))],output_list[int(per*len(output_list)):]]#int(len(image_list) * .25) : int(len(image_list) * .75)]
 #print '>', Y
@@ -1115,7 +1246,7 @@ Y = [output_list[:int(per*len(output_list))],output_list[int(per*len(output_list
 #Y2= range(225) #Y[int(len(Y) * .25) : int(len(Y) * .75)]#
 #print 'y ',len(Y1),'...',len(Y2), ' ',len(X[0]), ' ',len(X[1])#len(Y[0])
 
-#result=train(X_train=X[0],y_train=Y[0],X_test=X[1],y_test=Y[1],X_val=X[2],y_val=Y[2])
+#result=train(X_train=X[0],y_train=Y[0],X_test=X[1],y_test=Y[1],X_val=X[2],y_val=Y[2],size=size)
 
 result=createConv2(X[0],Y[0],X[1],Y[1])#set[0], set[1],set[4],set[5])
 
