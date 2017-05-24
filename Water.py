@@ -140,7 +140,7 @@ def process_water(path,THRESH,ADAP,DIST_PERC):
 
 
 
-def process_quick(path):
+def process_quick(path,ADAP):
 
     if True:
         im = Image.open(path)
@@ -174,7 +174,12 @@ def process_quick(path):
         #print 'key: ', id, ' - ', max
         id -= 30
 
-        ret, thresh = cv2.threshold(gray, id, 255,
+        if ADAP:
+            thresh = cv2.adaptiveThreshold(gray, 255,
+                                           cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 55, 20)
+
+        else:
+            ret, thresh = cv2.threshold(gray, id, 255,
                                     cv2.ADAPTIVE_THRESH_MEAN_C + cv2.THRESH_BINARY_INV)  # +cv2.THRESH_OTSU)#cv2.ADAPTIVE_THRESH_MEAN_C+
 
         kernel = np.ones((3, 3), np.uint8)
@@ -222,11 +227,11 @@ def process_quick(path):
 #                ss.add((fx[i][j][0], fx[i][j][1], fx[i][j][2]))
         #plt.imshow(fx)
         #plt.show()
-        ss = set()
-        for i in range(fx.shape[0]):
-            for j in range(fx.shape[1]):
-                ss.add((fx[i][j][0], fx[i][j][1], fx[i][j][2]))
-        print 'ssle22 ', len(ss)
+        #ss = set()
+        #for i in range(fx.shape[0]):
+        #    for j in range(fx.shape[1]):
+        #        ss.add((fx[i][j][0], fx[i][j][1], fx[i][j][2]))
+        #print 'ssle22 ', len(ss)
 
 
         #plt.imshow(fx)
@@ -328,12 +333,18 @@ def process_suzuki(path,THRESH,ADAP):
  #   plt.show()
     return im
 
-def process_felzen(path):
+def process_felzen(path,ADAP):
     if True:
         if True:
 
+            if False:
+                im = Image.open(path)
+                im.thumbnail((im.size[0] / 4, im.size[1] / 4), Image.ANTIALIAS)
+                im_arr = np.fromstring(im.tobytes(), dtype=np.uint8)
+                print 'im ', im_arr.size, im.size
+                im_arr = im_arr.reshape((im.size[1], im.size[0], im_arr.size / (im.size[1] * im.size[0])))
+                img = im_arr
             if True:
-
                 img = cv2.imread(
                     path)  # 10978_13_001.png-1.jpg')# densities/143_13_001.png')#558_13_002.png')#fotoscale.jpg')143_13_001.png')#
                 gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -357,7 +368,11 @@ def process_felzen(path):
                 #id -= 30
                 THRESH=30
                 id -= THRESH  # 15
-                ret, thresh = cv2.threshold(gray, id, 255, cv2.ADAPTIVE_THRESH_MEAN_C + cv2.THRESH_BINARY_INV)
+                if ADAP:
+                    thresh = cv2.adaptiveThreshold(gray, 255,
+                                                   cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 55, 20)
+                else:
+                    ret, thresh = cv2.threshold(gray, id, 255, cv2.ADAPTIVE_THRESH_MEAN_C + cv2.THRESH_BINARY_INV)
 
                 #thresh = cv2.adaptiveThreshold(gray, 255,
                 #                            cv2.ADAPTIVE_THRESH_MEAN_C,cv2.THRESH_BINARY_INV,55,20)# + cv2.THRESH_BINARY_INV)  # +cv2.THRESH_OTSU)#cv2.ADAPTIVE_THRESH_MEAN_C+

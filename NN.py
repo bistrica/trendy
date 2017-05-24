@@ -41,7 +41,7 @@ files = [f for f in listdir(path) if isfile(join(path, f))]
 ran=16
 ratio=4
 size_orig = 2048/ratio,1536/ratio
-size = 30,30# size_orig[0] / ran, size_orig[1] / ran
+size =  28,28#size_orig[0] / ran, size_orig[1] / ran
 PIXELS=size[0]*size[1]/4
 print "> ",size[0], ' ',size[1]
 
@@ -53,21 +53,22 @@ def load_files():
 
     for filename in files:
 
-        if 'xml' in filename:
+        if 'xml' in filename or 'Colour' in filename or 'dens_map' in filename:# or 'density' in filename:
             continue
 
-        if 'density' not in filename and 'Colour' not in filename:#'#'dens_map' in filename or 'xml' in filename or 'Colour' in filename:
-            continue
+       # if 'density' not in filename: and 'Colour' not in filename:#'#'dens_map' in filename or 'xml' in filename or 'Colour' in filename:
+        #    continue
         c += 1
         print 'f ',filename
-        #if c == 3:
-        #    break
+        #if c == 1:
+         #   break
         print filename, c
         #if c==60:
             #break
         im = Image.open("{0}{1}".format(path, filename))  # "/home/olusiak/Obrazy/schr.png")
         if 'density' in filename:
             print 'erozja'
+
             im_arr = np.fromstring(im.tobytes(), dtype=np.uint8)
             im_arr = im_arr.reshape((im.size[1], im.size[0], 4))
             kernel = np.ones((3, 3), np.uint8)
@@ -232,7 +233,7 @@ def load_files():
                             aImg=list()
                             for ik in range(len(a2)):
                                 aImg.append(a2[ik])
-                                a2[ik]=float(a2[ik]/255)
+                                a2[ik]=float(a2[ik])#/255)
                             aImg= np.asarray(aImg)
                             # print 'a ',a2.shape
                             aImg = np.reshape(aImg, (size[0], size[1]))  # okrr
@@ -434,29 +435,12 @@ def load_dataset():
     dataset_size2 = len(X_test)
     #X_test = X_test.reshape(dataset_size2, -1)
 
-    X_train=X_train[:10000]
-    y_train = y_train[:10000]
+    X_train=X_train#[:10000]
+    y_train = y_train#[:10000]
     y_train2=list()
     y_test2=list()
     c=0
-    for y in y_train:
-        c+=1
-        if c%2==0:
-            y_train2.append((1,0,0,0,0,1))#((y,0),(0,1)))
-        else:
-            y_train2.append((0,1,0,1,0,0))#((0,y), (1,0)))
-    for y in y_test:
-        c+=1
-        if c%2==0:
-            y_test2.append((1,0,0,1,0,0))#(((y,0), (0,1)))
-        else:
-            y_test2.append((0,1,0,1,0,0))#(((0,y), (1,0)))
-        #y_test2.append((y,c%3))
 
-    #print y_train
-    #X_test = X_test[:100]
-    #y_test = y_test[:100]
-    #print 'y test ', y_test
 
     return X_train, y_train2, X_val, y_val, X_test, y_test2
 
@@ -664,7 +648,7 @@ counterr=0
 rem=list()
 ind=0
 
-for index in range(len(out)):
+for index in range(len(out)/4):
     ok=False
     tab=out[index]
     for e in tab[0]:
@@ -763,10 +747,10 @@ def createConv2(attributes, labels, data, results):
                 #flat_outdim=1,
                 #flat_shape=(1,32*4*6),
                 #dense
-                dense_num_units=32*4*6,#('dense',layers.DenseLayer),
+                dense_num_units=32*5*5,#4*6,#('dense',layers.DenseLayer),
                 dense_nonlinearity=lasagne.nonlinearities.rectify,
                 #resh
-                resh_shape=(-1,32,4,6),
+                resh_shape=(-1,32,5,5),#4,6),
 
                 #up
                 up_scale_factor=2,
@@ -774,7 +758,7 @@ def createConv2(attributes, labels, data, results):
                 #transp1
                 transp1_num_filters=32,
                 transp1_filter_size=(3, 3),
-                transp1_nonlinearity=lasagne.nonlinearities.sigmoid,
+                transp1_nonlinearity=lasagne.nonlinearities.rectify,
                 # up2
                 up2_scale_factor=2,
 
@@ -788,7 +772,7 @@ def createConv2(attributes, labels, data, results):
                 transp3_nonlinearity=lasagne.nonlinearities.rectify,
                 conv2d4_num_filters=1,
                 conv2d4_filter_size=(1, 1),
-                conv2d4_nonlinearity=lasagne.nonlinearities.sigmoid,
+                conv2d4_nonlinearity=lasagne.nonlinearities.rectify,
 
 
                 update=nesterov_momentum,
@@ -797,7 +781,7 @@ def createConv2(attributes, labels, data, results):
                 #objective_loss_function=lasagne.objectives.squared_error(),
                 update_learning_rate=0.01,  # 0.01
                 update_momentum=0.9,
-                max_epochs=100,
+                max_epochs=300,
                 y_tensor_type=T.tensor4,
                 verbose=1,  # ,
                 regression=True
@@ -819,12 +803,12 @@ def createConv2(attributes, labels, data, results):
                 ifg+=1
                 pr=pr[0]
                 print 'PRR: ', pr
-                for p in pr:#range(pr.size):
-                    for p1 in range(p.size):
+                #for p in pr:#range(pr.size):
+                 #   for p1 in range(p.size):
                     #for p1 in range(p.size):
                         #print 'p[p1] ',p[p1]
-                        if p[p1]<0.5:
-                            p[p1]=255#        pr[p][p1]=255
+                        #if p[p1]<0.5:
+                         #   p[p1]=255#        pr[p][p1]=255
 
                 plt.matshow(pr)
                 plt.show()
@@ -1033,13 +1017,13 @@ def createConv2b(attributes, labels, data, results):
                 up3_scale_factor=2,
                 transp3_num_filters=16,
                 transp3_filter_size=(3, 3),
-                #transp3_crop='same',
+                transp3_crop='same',
                 transp3_nonlinearity=lasagne.nonlinearities.rectify,
                 conv2d5_num_filters=1,
                 #conv2d5_pad='same',
                 conv2d5_filter_size=(1, 1),
 
-                conv2d5_nonlinearity=lasagne.nonlinearities.sigmoid,
+                conv2d5_nonlinearity=lasagne.nonlinearities.rectify,
                 #('conv2d4', layers.Conv2DLayer),  # ,
 
                 #output_nonlinearity=lasagne.nonlinearities.sigmoid,
@@ -1200,10 +1184,19 @@ def createConv2b(attributes, labels, data, results):
                 i += 1
             print preds.shape
 
+def load_caltech():
+    path=''
+    files = [f for f in listdir(path) if isfile(join(path, f))]
+    for f in files:
+        im = Image.open("{0}{1}".format(path, f))
+        im.thumbnail((im.size[0] / ran, im.size[1] / ran), Image.ANTIALIAS)
+        im_arr = np.fromstring(im.tobytes(), dtype=np.uint8)
+
+
 print 'COUNT ',len(out), ' ',len(image_list), counterr
 
 per=0.9
-ids=range(0,len(image_list)/10)
+ids=range(0,len(image_list))
 shuffle(ids)
 image_list2=list()
 out2=list()
@@ -1219,7 +1212,7 @@ X = [image_list[:int(per*len(image_list))],image_list[int(per*len(image_list)):]
 Xt = [imgs[:int(per*len(imgs))],imgs[int(per*len(imgs)):]]
 print 'IMA ',len(image_list)
 
-output_list=out
+#output_list=out
 
 X = [image_list[:int(per*len(image_list))],image_list[int((per)*len(image_list)):]]
 
@@ -1229,7 +1222,7 @@ X = [image_list[:int(per*len(image_list))],image_list[int((per)*len(image_list))
 #for im in output_list:
 #    print '>o ',len(im[0])
 print len(X[0]),len(X[1])
-Y = [output_list[:int(per*len(output_list))],output_list[int((per)*len(output_list)):]]
+#Y = [output_list[:int(per*len(output_list))],output_list[int((per)*len(output_list)):]]
 
 #Y = [output_list[:int(per*len(output_list))],output_list[int(per*len(output_list)):int((per+0.2)*len(output_list))],output_list[int((per+0.2)*len(output_list)):]]
 
@@ -1247,8 +1240,13 @@ Y = [output_list[:int(per*len(output_list))],output_list[int((per)*len(output_li
 #print 'y ',len(Y1),'...',len(Y2), ' ',len(X[0]), ' ',len(X[1])#len(Y[0])
 
 #result=train(X_train=X[0],y_train=Y[0],X_test=X[1],y_test=Y[1],X_val=X[2],y_val=Y[2],size=size)
+#tup=load_dataset()
+x=load_caltech()
+#X_train=tup[0]
+#X_test=tup[4]
+result=createConv2(X[0],X[0],X[1],X[1])#set[0], set[1],set[4],set[5])
+#result=createConv2b(X_train,X_train,X_test,X_test)
 
-result=createConv2(X[0],Y[0],X[1],Y[1])#set[0], set[1],set[4],set[5])
 
 #result=createConv(set[0], set[1],set[4],set[5])
 
