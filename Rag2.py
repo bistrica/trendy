@@ -283,8 +283,8 @@ def process_files(type, min_p,min_s,value,thresh,adap,n_seg,dist_perc):
 
 
     TYPE=type#RAG#QUICK#RAG#WATER
-    folder='RAG'
-    fileSumm = open('/home/olusiak/water TYPE '+str(TYPE)+' THRESH '+str(thresh)+' ADAP '+str(adap)+'N SEG '+str(n_seg)+'DIST_P '+str(dist_perc)+'CHM '+str(value)+'_'+str(min_p)+'_'+str(min_s)+'.txt', 'w+')
+    folder='CD'
+    fileSumm = open('/home/olusiak/CD2 TYPE '+str(TYPE)+' THRESH '+str(thresh)+' ADAP '+str(adap)+'N SEG '+str(n_seg)+'DIST_P '+str(dist_perc)+'CHM '+str(value)+'_'+str(min_p)+'_'+str(min_s)+'.txt', 'w+')
     summ=Summarizer(min_p,min_s,value)
     files = [f for f in listdir(main_path) if isfile(join(main_path, f))]
     files.sort()
@@ -293,8 +293,10 @@ def process_files(type, min_p,min_s,value,thresh,adap,n_seg,dist_perc):
     DIFF=0
 
     for file in files:
-     #   if cf==10:
-      #      break
+        if cf==10:
+            break
+        if cf<5:
+            continue
 
      #   file='871_13_001.png'
         cf+=1
@@ -388,7 +390,7 @@ def process_files(type, min_p,min_s,value,thresh,adap,n_seg,dist_perc):
 
         #red_img = summ.check_mat(red_img)
 
-        red_img.save('/home/olusiak/Obrazy/'+folder+'/'+file+' TYPE '+str(TYPE)+' THRESH '+str(thresh)+' ADAP '+str(adap)+'N SEG '+str(n_seg)+'DIST_P '+str(dist_perc)+'CHM '+str(value)+'_'+str(min_p)+'_'+str(min_s)+'_red.png')
+        #red_img.save('/home/olusiak/Obrazy/'+folder+'/'+file+' CD TYPE '+str(TYPE)+' THRESH '+str(thresh)+' ADAP '+str(adap)+'N SEG '+str(n_seg)+'DIST_P '+str(dist_perc)+'CHM '+str(value)+'_'+str(min_p)+'_'+str(min_s)+'_red.png')
 
         #tp_red = summ.count_tp(red_img, map_red)
         #red_cnt, red_cells = summ.count_with_median(red_img)
@@ -403,9 +405,9 @@ def process_files(type, min_p,min_s,value,thresh,adap,n_seg,dist_perc):
         blue_img = summ.check_mat(blue_img)
    #     plt.imshow(blue_img)
    #     plt.show()
-        blue_img.save('/home/olusiak/Obrazy/' + folder + '/' + file + ' TYPE ' + str(TYPE) + ' THRESH ' + str(
-            thresh) + ' ADAP ' + str(adap) + 'N SEG ' + str(n_seg) + 'DIST_P ' + str(dist_perc) + 'CHM ' + str(
-            value) + '_' + str(min_p) + '_' + str(min_s) + '_blue.png')
+        #blue_img.save('/home/olusiak/Obrazy/' + folder + '/' + file + ' CD2 TYPE ' + str(TYPE) + ' THRESH ' + str(
+         #   thresh) + ' ADAP ' + str(adap) + 'N SEG ' + str(n_seg) + 'DIST_P ' + str(dist_perc) + 'CHM ' + str(
+          #  value) + '_' + str(min_p) + '_' + str(min_s) + '_blue.png')
 
         #tp_blue = summ.count_tp(blue_img, map_blue)
         #blue_cnt, blue_cells = summ.count_with_median(blue_img)
@@ -436,8 +438,8 @@ def process_files(type, min_p,min_s,value,thresh,adap,n_seg,dist_perc):
     #ihc_hdx = color.separate_stains(ihc, color.hdx_from_rgb)
 
 
-min_percs = [0]#,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9]#0.3, 0.5, 0.8]
-min_sizes = [0.05]#,0.025,0.05]#.075,0.1,0.125,0.15]#,0.025,0.05]#, 0.075, 0.1, 0.125, 0.15]#, 0.015, 0.03]
+min_percs = [0,0.2,0.3,0.4] #todo 0.7 0.125
+min_sizes = [0.075,0.1,0.125,0.15]#,0.025,0.05]#, 0.075, 0.1, 0.125, 0.15]#, 0.015, 0.03]
 vals=[0]
 means=list()
 for min_p in min_percs:
@@ -447,7 +449,11 @@ for min_p in min_percs:
             #print STR
             #m=process_files(RAG, min_p,min_s,val,30,False,4000,None)
             #means.append(str(m)+str(STR))
-
+            STR = ('min_p ', min_p, min_s, val, 30, False, None, 0.1)
+            print STR
+            m = process_files(QUICK, min_p, min_s, val, 30, False, None, 0.1)
+            means.append(str(m) + str(STR))
+            break
 
 
             #STR = ('min_p ', min_p, min_s, val, RAG, min_p, min_s, val, 30, False, 8000, None)
@@ -523,10 +529,12 @@ for min_p in min_percs:
             #print STR
             #m =process_files(WATER, min_p, min_s, val, 15, False, None, 0.1)
             #means.append(str(m)+str(STR))
-          #  STR = ('min_p ', min_p, min_s, val, 30, False, None, 0.1)
-           # print STR
-            #m =process_files(WATER, min_p, min_s, val, 30, False, None, 0.1)
-            #means.append(str(m)+str(STR))
+            STR = ('min_p ', min_p, min_s, val, 30, False, None, 0.1)
+            print STR
+            m =process_files(WATER, min_p, min_s, val, 30, False, None, 0.1)
+            means.append(str(m)+str(STR))
+
+
 
             #STR = ('min_p ', min_p, min_s, val, 30, False, None, 0.2)
             #print STR
@@ -592,25 +600,22 @@ for min_p in min_percs:
             #m =process_files(SUZUKI, min_p, min_s, val, 15, False, None, None)
             #means.append(str(m)+str(STR))
 
-            STR = ('min_p ', min_p, min_s, val, 0, True, None, 0.1)
+            # STR = ('min_p ', min_p, min_s, val, 0, True, None, 0.1)
+            # print STR
+            # m =process_files(WATER, min_p, min_s, val, 0, True, None, 0.1)
+            #  means.append(str(m)+str(STR))
+
+            STR=( 'min_p ', min_p, min_s, val, 30, False, None, None)
             print STR
-            m =process_files(WATER, min_p, min_s, val, 0, True, None, 0.1)
+            m =process_files(SUZUKI, min_p, min_s, val, 30, False, None, None)
             means.append(str(m)+str(STR))
 
-#            STR=( 'min_p ', min_p, min_s, val, 30, False, None, None)
- #           print STR
-  #          m =process_files(SUZUKI, min_p, min_s, val, 30, False, None, None)
-   #         means.append(str(m)+str(STR))
+            STR = ('min_p ', min_p, min_s, val, 30, False, None, 0.1)
+            print STR
+            m = process_files(FELZ, min_p, min_s, val, 30, False, None, 0.1)
+            means.append(str(m) + str(STR))
 
-        #   STR = ('min_p ', min_p, min_s, val, 30, False, None, 0.1)
-         #  print STR
-          # m = process_files(FELZ, min_p, min_s, val, 30, False, None, 0.1)
-           #means.append(str(m) + str(STR))
 
-#           STR = ('min_p ', min_p, min_s, val, 30, False, None, 0.1)
- #          print STR
-  #         m = process_files(QUICK, min_p, min_s, val, 30, False, None, 0.1)
-   #        means.append(str(m) + str(STR))
 
 for m in means:
     print 'M ',m

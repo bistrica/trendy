@@ -41,7 +41,7 @@ files = [f for f in listdir(path) if isfile(join(path, f))]
 ran=16
 ratio=4
 size_orig = 2048/ratio,1536/ratio
-size =  28,28#size_orig[0] / ran, size_orig[1] / ran
+size = 28,28#60,28# 28,28#size_orig[0] / ran, size_orig[1] / ran
 PIXELS=size[0]*size[1]/4
 print "> ",size[0], ' ',size[1]
 
@@ -58,11 +58,12 @@ def load_files():
 
        # if 'density' not in filename: and 'Colour' not in filename:#'#'dens_map' in filename or 'xml' in filename or 'Colour' in filename:
         #    continue
+        if c == 20:
+            break
         c += 1
         print 'f ',filename
-        #if c == 1:
-         #   break
-        print filename, c
+
+        #print filename, c
         #if c==60:
             #break
         im = Image.open("{0}{1}".format(path, filename))  # "/home/olusiak/Obrazy/schr.png")
@@ -233,9 +234,11 @@ def load_files():
                             aImg=list()
                             for ik in range(len(a2)):
                                 aImg.append(a2[ik])
+                                #print 'ik ',a2[ik]
                                 a2[ik]=float(a2[ik])#/255)
                             aImg= np.asarray(aImg)
                             # print 'a ',a2.shape
+                            #aImg=a2[ik]
                             aImg = np.reshape(aImg, (size[0], size[1]))  # okrr
 
                             aImg = np.rot90(aImg)  # okrr
@@ -648,18 +651,21 @@ counterr=0
 rem=list()
 ind=0
 
-for index in range(len(out)/4):
+for index in range(len(out)/10):
     ok=False
+    ok2=False
     tab=out[index]
     for e in tab[0]:
         for f in range(len(e)):
-
+            if e[f]!=1:
+                ok2=True
             if e[f]!=0:
                 ok=True
-                break
-        if ok:
+                if ok2:
+                    break
+        if ok and ok2:
             break
-    if not ok:
+    if not (ok and ok2):
         rem.append(index)
 
     #print '---'
@@ -695,16 +701,17 @@ def createConv2(attributes, labels, data, results):
     if True:
         if True:
             X_train = attributes
-            print 'X_train ', len(X_train)
-            print 'len X_train ', len(X_train[0])
+
+#            print 'len X_train ', len(X_train[0])
             #for x in X_train:
             #    print 'size ', x[0].size, x[0].shape
             #c=9/0
             y_train = labels
+            print 'X_train ', len(X_train),len(y_train)
             X_test = data
             y_test = results
             X_train = np.asarray(X_train)
-            print 'sh ', X_train.shape[1:]
+#            print 'sh ', X_train.shape[1:]
 
             net1 = NeuralNet(
                 layers=[('input', layers.InputLayer),
@@ -781,22 +788,22 @@ def createConv2(attributes, labels, data, results):
                 #objective_loss_function=lasagne.objectives.squared_error(),
                 update_learning_rate=0.01,  # 0.01
                 update_momentum=0.9,
-                max_epochs=300,
+                max_epochs=101,
                 y_tensor_type=T.tensor4,
                 verbose=1,  # ,
                 regression=True
             )
             # Train the network
-            print 'yt ', len(y_train[0])
+#            print 'yt ', len(y_train[0])
 
             nn = net1.fit(X_train, y_train)
             preds = net1.predict(X_test)
 
             ifg = 0
             for pr in preds:
-                plt.matshow(X_test[ifg][0])
+                plt.matshow(X_test[ifg][0],cmap='gray')
                 plt.show()
-                plt.matshow(y_test[ifg][0])
+                plt.matshow(y_test[ifg][0],cmap='gray')
                 for c in y_test[ifg][0]:
                     print 'ef ',c
                 plt.show()
@@ -810,7 +817,7 @@ def createConv2(attributes, labels, data, results):
                         #if p[p1]<0.5:
                          #   p[p1]=255#        pr[p][p1]=255
 
-                plt.matshow(pr)
+                plt.matshow(pr,cmap='gray')
                 plt.show()
                 print 'PRR2: ', pr
 
@@ -992,10 +999,10 @@ def createConv2b(attributes, labels, data, results):
                 conv2d4_pad='same',
                 conv2d4_nonlinearity=lasagne.nonlinearities.rectify,
 
-                dense_num_units=512 * 2 * 2,  # ('dense',layers.DenseLayer),
+                dense_num_units=512 * 2 * 6,#2,  # ('dense',layers.DenseLayer),
                 dense_nonlinearity=lasagne.nonlinearities.rectify,
                 # resh
-                reshape_shape=(-1,512,2,2),
+                reshape_shape=(-1,512,2,6),#2),
                 # up
                 up_scale_factor=2,
                 #('up', layers.Upscale2DLayer),
@@ -1185,12 +1192,82 @@ def createConv2b(attributes, labels, data, results):
             print preds.shape
 
 def load_caltech():
-    path=''
-    files = [f for f in listdir(path) if isfile(join(path, f))]
-    for f in files:
-        im = Image.open("{0}{1}".format(path, f))
-        im.thumbnail((im.size[0] / ran, im.size[1] / ran), Image.ANTIALIAS)
-        im_arr = np.fromstring(im.tobytes(), dtype=np.uint8)
+    path='/home/olusiak/Pobrane/CALTECH/CALTECH/'
+    XX=100
+    X=list()
+    c=0
+    for dirpath, dirnames, filenames in os.walk(path):
+        for filename in [f for f in filenames if f.endswith(".jpg")]:
+
+            im = Image.open("{0}{1}".format(dirpath+'/', filename))
+            c+=1
+            if c==XX:
+                break
+
+
+
+            from PIL import ImageOps
+            thumb = ImageOps.fit(im, (28,28), Image.ANTIALIAS)
+
+            im_arr = np.fromstring(thumb.tobytes(), dtype=np.uint8)
+
+            print im_arr.size, im.size[1], im.size[0]
+            im_arr = im_arr.reshape((thumb.size[1], thumb.size[0], im_arr.size/(thumb.size[1]*thumb.size[0])))
+
+            try:
+                im_arr = rgb2gray(im_arr)
+            except:
+                print "im ",im_arr.size, thumb.size
+            im_arr = im_arr.reshape((1,im_arr.shape[0],im_arr.shape[1]))
+            print "im sh ", im_arr.shape
+            X.append(im_arr)
+
+        if c==XX:
+            break
+    shuffle(X)
+    per=0.9
+    X = [X[:int(per * len(X))], X[int(per * len(X)):]]
+    return X
+
+def load_SVHN():
+    path='/home/olusiak/Pobrane/train/'
+    XX=50000
+    X=list()
+    c=0
+    for dirpath, dirnames, filenames in os.walk(path):
+        for filename in [f for f in filenames if f.endswith(".png")]:
+
+            im = Image.open("{0}{1}".format(dirpath+'/', filename))
+            c+=1
+            if c==XX:
+                break
+
+
+
+            from PIL import ImageOps
+            thumb = ImageOps.fit(im, size, Image.ANTIALIAS)
+
+            im_arr = np.fromstring(thumb.tobytes(), dtype=np.uint8)
+
+            print im_arr.size, im.size[1], im.size[0]
+            im_arr = im_arr.reshape((thumb.size[1], thumb.size[0], im_arr.size/(thumb.size[1]*thumb.size[0])))
+         #   plt.imshow(im_arr)
+          #  plt.show()
+            try:
+                im_arr = rgb2gray(im_arr)
+            except:
+                print "im ",im_arr.size, thumb.size
+            im_arr = im_arr.reshape((1,im_arr.shape[0],im_arr.shape[1]))
+            print "im sh ", im_arr.shape
+            X.append(im_arr)
+
+        if c==XX:
+            break
+    shuffle(X)
+    per=0.9
+    X = [X[:int(per * len(X))], X[int(per * len(X)):]]
+    return X
+
 
 
 print 'COUNT ',len(out), ' ',len(image_list), counterr
@@ -1222,7 +1299,7 @@ X = [image_list[:int(per*len(image_list))],image_list[int((per)*len(image_list))
 #for im in output_list:
 #    print '>o ',len(im[0])
 print len(X[0]),len(X[1])
-#Y = [output_list[:int(per*len(output_list))],output_list[int((per)*len(output_list)):]]
+Y = [output_list[:int(per*len(output_list))],output_list[int((per)*len(output_list)):]]
 
 #Y = [output_list[:int(per*len(output_list))],output_list[int(per*len(output_list)):int((per+0.2)*len(output_list))],output_list[int((per+0.2)*len(output_list)):]]
 
@@ -1241,10 +1318,11 @@ print len(X[0]),len(X[1])
 
 #result=train(X_train=X[0],y_train=Y[0],X_test=X[1],y_test=Y[1],X_val=X[2],y_val=Y[2],size=size)
 #tup=load_dataset()
-x=load_caltech()
+#X=load_caltech()
+#X=load_SVHN()
 #X_train=tup[0]
 #X_test=tup[4]
-result=createConv2(X[0],X[0],X[1],X[1])#set[0], set[1],set[4],set[5])
+result=createConv2(X[0],Y[0],X[1],Y[1])#set[0], set[1],set[4],set[5])
 #result=createConv2b(X_train,X_train,X_test,X_test)
 
 

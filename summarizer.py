@@ -63,8 +63,10 @@ class Summarizer(object):
         keys.sort()
         #print 'keys ',keys
         #print len(keys),' non ',nonblack,' img2.shape ',img2.size[0]*img2.size[1]
+
         median = float(keys[len(keys) / 2])
         if len(keys) % 2 == 0:
+
             median += float(keys[len(keys) / 2 + 1])
             median /= 2
         #print 'medi ',median
